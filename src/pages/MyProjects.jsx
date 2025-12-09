@@ -1,0 +1,216 @@
+import {
+  Box,
+  Typography,
+  Stack,
+  Button,
+  Modal,
+  TextField,
+  Card,
+  CardContent,
+  CardMedia,
+  CircularProgress,
+} from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { useState } from "react";
+
+export default function MyProjects() {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    title: "",
+    short_desc: "",
+    full_desc: "",
+    image: "",
+    github: "",
+    live: "",
+  });
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["myProjects"],
+    queryFn: async () => {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:5000/api/projects/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Loaded data:", res.data);
+      return res.data;
+    },
+  });
+
+  const createProject = async () => {
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/projects",
+        form,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Project created:", res.data);
+      setOpen(false);
+      refetch();
+      setForm({
+        title: "",
+        short_desc: "",
+        full_desc: "",
+        image: "",
+        github: "",
+        live: "",
+      });
+    } catch (err) {
+      console.error("Error creating project:", err);
+      alert("Failed to create project");
+    }
+  };
+
+  // 🔥 HANDLE FILE UPLOAD
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const res = await axios.post(
+      "http://localhost:5000/api/upload",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    // Save returned URL to form
+    setForm((prev) => ({ ...prev, image: res.data.url }));
+  };
+
+  return (
+    <Box p={3}>
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Typography variant="h4">My Projects</Typography>
+        <Button variant="contained" onClick={() => setOpen(true)}>
+          New Project
+        </Button>
+      </Box>
+
+      {/* Loading State */}
+      {isLoading ? (
+        <CircularProgress />
+      ) : (
+        <Stack spacing={2} mt={3}>
+          {data?.map((project) => (
+            <Card key={project.id} sx={{ display: "flex" }}>
+              <CardMedia
+                component="img"
+                image={project.image}
+                alt={project.title}
+                sx={{ width: 160, height: 160, objectFit: "cover" }}
+              />
+              <CardContent>
+                <Typography variant="h6">{project.title}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {project.short_desc}
+                </Typography>
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
+      )}
+
+      {/* MODAL FOR NEW PROJECT */}
+      <Modal open={open} onClose={() => setOpen(false)}>
+        <Box
+          sx={{
+            width: 500,
+            p: 4,
+            background: "white",
+            borderRadius: 2,
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          <Typography variant="h5" mb={2}>
+            Create New Project
+          </Typography>
+
+          <Stack spacing={2}>
+            <TextField
+              label="Title"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              fullWidth
+            />
+
+            {/* 🔥 FILE UPLOAD BUTTON */}
+            <Button variant="outlined" component="label">
+              Upload Image
+              <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
+            </Button>
+
+            {/* 🔥 IMAGE PREVIEW */}
+            {form.image && (
+              <img
+                src={form.image}
+                alt="Preview"
+                style={{
+                  width: "100%",
+                  height: "200px",
+                  objectFit: "cover",
+                  borderRadius: "10px",
+                }}
+              />
+            )}
+
+            <TextField
+              label="Short Description"
+              value={form.short_desc}
+              onChange={(e) =>
+                setForm({ ...form, short_desc: e.target.value })
+              }
+              fullWidth
+            />
+
+            <TextField
+              label="Full Description"
+              multiline
+              rows={3}
+              value={form.full_desc}
+              onChange={(e) =>
+                setForm({ ...form, full_desc: e.target.value })
+              }
+              fullWidth
+            />
+
+            <TextField
+              label="GitHub Link"
+              value={form.github}
+              onChange={(e) => setForm({ ...form, github: e.target.value })}
+              fullWidth
+            />
+
+            <TextField
+              label="Live Link"
+              value={form.live}
+              onChange={(e) => setForm({ ...form, live: e.target.value })}
+              fullWidth
+            />
+
+            <Button variant="contained" onClick={createProject}>
+              Create
+            </Button>
+          </Stack>
+        </Box>
+      </Modal>
+    </Box>
+  );
+}
