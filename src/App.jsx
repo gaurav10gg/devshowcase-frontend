@@ -7,40 +7,31 @@ export default function App() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 🔹 Handle Google OAuth redirect (PKCE flow)
-    const handleOAuthCallback = async () => {
-      const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href);
-
-      if (!error && data?.session) {
-        localStorage.setItem("token", data.session.access_token);
-        navigate("/home", { replace: true });
-      }
-    };
-
-    handleOAuthCallback();
-
-    // 🔹 On load, restore existing session
-    const loadSession = async () => {
-      const { data } = await supabase.auth.getSession();
+    // restore session on load
+    supabase.auth.getSession().then(({ data }) => {
       if (data?.session) {
         localStorage.setItem("token", data.session.access_token);
       }
-    };
-
-    loadSession();
-
-    // 🔹 Listen for sign in/out
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        localStorage.setItem("token", session.access_token);
-        navigate("/home", { replace: true });
-      }
-
-      if (event === "SIGNED_OUT") {
-        localStorage.removeItem("token");
-        navigate("/", { replace: true });
-      }
     });
+
+    // listen for login / logout
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === "SIGNED_IN") {
+          if (session?.access_token) {
+            localStorage.setItem("token", session.access_token);
+          }
+          navigate("/home", { replace: true });
+        }
+
+        if (event === "SIGNED_OUT") {
+          localStorage.removeItem("token");
+          navigate("/", { replace: true });
+        }
+      }
+    );
+
+    return () => listener.subscription.unsubscribe();
   }, []);
 
   return <AppRouter />;
