@@ -17,16 +17,19 @@ export default function App() {
 
     // Listen for login events from Supabase
     supabase.auth.onAuthStateChange((event, session) => {
-  if (event === "SIGNED_IN" && session) {
-    localStorage.setItem("token", session.access_token);
-    navigate("/home");
-  }
+      if (event === "SIGNED_IN" && session) {
+        localStorage.setItem("token", session.access_token);
+        navigate("/home");
+      }
 
-  if (event === "SIGNED_OUT") {
-    localStorage.removeItem("token");
-    navigate("/", { replace: true });
-  }
-});
+      if (event === "SIGNED_OUT") {
+        localStorage.removeItem("token");
+        navigate("/", { replace: true });
+      }
+    });
+
+    // ⭐ IMPORTANT: process OAuth redirect hash (#access_token=...)
+    supabase.auth.getSessionFromUrl({ storeSession: true });
 
     checkSession();
   }, []);
