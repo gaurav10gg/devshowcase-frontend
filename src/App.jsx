@@ -7,32 +7,32 @@ export default function App() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check session when app loads
-    const checkSession = async () => {
+    const init = async () => {
+      // 1️⃣ Process OAuth redirect (v1)
+      await supabase.auth.getSessionFromUrl();
+
+      // 2️⃣ Check existing session
       const { data } = await supabase.auth.getSession();
-      if (data.session) {
+      if (data?.session) {
         localStorage.setItem("token", data.session.access_token);
       }
+
+      // 3️⃣ Listen for auth state changes
+      supabase.auth.onAuthStateChange((event, session) => {
+        if (event === "SIGNED_IN" && session) {
+          localStorage.setItem("token", session.access_token);
+          navigate("/home");
+        }
+
+        if (event === "SIGNED_OUT") {
+          localStorage.removeItem("token");
+          navigate("/", { replace: true });
+        }
+      });
     };
 
-    // Listen for login events from Supabase
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        localStorage.setItem("token", session.access_token);
-        navigate("/home");
-      }
-
-      if (event === "SIGNED_OUT") {
-        localStorage.removeItem("token");
-        navigate("/", { replace: true });
-      }
-    });
-
-    // ⭐ IMPORTANT: process OAuth redirect hash (#access_token=...)
-    supabase.auth.getSessionFromUrl({ storeSession: true });
-
-    checkSession();
-  }, []);
+    init();
+  }, [navigate]);
 
   return <AppRouter />;
 }
