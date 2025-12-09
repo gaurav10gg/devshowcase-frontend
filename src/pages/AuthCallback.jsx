@@ -6,19 +6,19 @@ export default function AuthCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    const finishLogin = async () => {
+      const { data } = await supabase.auth.getSession();
 
-      if (session) {
-        localStorage.setItem("token", session.access_token);
+      if (data?.session) {
+        localStorage.setItem("token", data.session.access_token);
         navigate("/home", { replace: true });
       } else {
-        console.log("No session found.");
-        navigate("/", { replace: true });
+        console.log("No session found yet, retrying…");
+        setTimeout(finishLogin, 200); // wait for Supabase to parse hash
       }
     };
 
-    handleSession();
+    finishLogin();
   }, [navigate]);
 
   return <div>Loading...</div>;

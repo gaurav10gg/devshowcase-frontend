@@ -5,6 +5,8 @@ import MyProjects from "../pages/MyProjects";
 import Settings from "../pages/Settings";
 import About from "../pages/About";
 import AppLayout from "../layouts/AppLayout";
+import AuthCallback from "../pages/AuthCallback";
+
 
 // ------------------------------------
 // Protected Route
@@ -21,8 +23,9 @@ export default function AppRouter() {
       <Route path="/" element={<Landing />} />
 
       {/* OAuth callback */}
-      <Route path="/auth/callback" element={<div>Loading...</div>} />
-
+    
+    <Route path="/auth/callback" element={<AuthCallback />} />
+ 
       {/* Protected */}
       <Route
         element={
