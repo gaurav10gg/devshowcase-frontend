@@ -5,7 +5,7 @@ import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-
+import { API_URL } from "../config";
 export default function Topbar({ sidebarOpen, onToggleSidebar }) {
   const navigate = useNavigate();
 
@@ -15,7 +15,7 @@ export default function Topbar({ sidebarOpen, onToggleSidebar }) {
   const { data: user } = useQuery({
     queryKey: ["me"],
     queryFn: async () => {
-      const res = await axios.get("http://localhost:5000/api/users/me", {
+      const res = await axios.get(`${API_URL}/api/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return res.data;

@@ -13,6 +13,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useState } from "react";
+import { API_URL } from "../config";
 
 export default function MyProjects() {
   const [open, setOpen] = useState(false);
@@ -29,7 +30,7 @@ export default function MyProjects() {
     queryKey: ["myProjects"],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/projects/me", {
+      const res = await axios.get(`${API_URL}/api/projects/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log("Loaded data:", res.data);
@@ -42,7 +43,7 @@ export default function MyProjects() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/projects",
+        `${API_URL}/api/projects`,
         form,
         {
           headers: {
@@ -78,7 +79,7 @@ export default function MyProjects() {
     formData.append("image", file);
 
     const res = await axios.post(
-      "http://localhost:5000/api/upload",
+      `${API_URL}/api/upload`,
       formData,
       {
         headers: {
