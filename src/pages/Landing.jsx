@@ -10,30 +10,27 @@ import Navbar from "../components/Navbar";
 import { supabase } from "../supabaseClient";
 
 export default function Landing() {
-  // ⭐ Correct Google Login Handler (Hosted OAuth Mode)
- const handleSignIn = async () => {
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
-      queryParams: {
-        access_type: "offline",
-        prompt: "consent",
+  const handleSignIn = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        flowType: "pkce",
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
       },
-    },
-  });
+    });
 
-  if (error) console.error("Google login error:", error);
-};
+    if (error) console.error("Google login error:", error);
+  };
 
   return (
     <>
-      {/* PAGE WRAPPER */}
       <Box sx={{ bgcolor: "#f9fafb", minHeight: "100vh", pb: 0, mb: 0 }}>
-        {/* NAVBAR */}
         <Navbar onSignIn={handleSignIn} />
 
-        {/* HERO SECTION */}
         <Container maxWidth="lg" sx={{ pt: { xs: 14, md: 18 }, pb: 10, mb: 0 }}>
           <Stack
             direction={{ xs: "column", md: "row" }}
@@ -41,7 +38,6 @@ export default function Landing() {
             alignItems="center"
             justifyContent="space-between"
           >
-            {/* LEFT SIDE CONTENT */}
             <Box sx={{ flex: 1 }}>
               <Typography
                 variant="h2"
@@ -75,7 +71,6 @@ export default function Landing() {
               </Typography>
 
               <Stack direction="row" spacing={2}>
-                {/* ⭐ Google Login Button (Works now) */}
                 <Button
                   variant="contained"
                   size="large"
@@ -121,7 +116,6 @@ export default function Landing() {
               </Stack>
             </Box>
 
-            {/* RIGHT HERO IMAGE */}
             <Box
               component="img"
               src="https://img.freepik.com/free-vector/coding-concept-illustration_114360-1678.jpg"
@@ -137,7 +131,6 @@ export default function Landing() {
           </Stack>
         </Container>
 
-        {/* FEATURES SECTION */}
         <Box sx={{ bgcolor: "#fff", py: 10, mb: 0 }}>
           <Container maxWidth="md">
             <Typography
@@ -201,7 +194,6 @@ export default function Landing() {
         </Box>
       </Box>
 
-      {/* FOOTER */}
       <Box
         sx={{
           width: "100%",
