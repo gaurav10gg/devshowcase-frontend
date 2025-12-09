@@ -6,39 +6,20 @@ export default function AuthCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const finishLogin = async () => {
-      const url = window.location.href;
+    const handleSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
 
-      // Exchange the auth code → Supabase session
-      const { data, error } = await supabase.auth.exchangeCodeForSession(url);
-
-      if (error) {
-        console.error("OAuth Error:", error);
-        return navigate("/", { replace: true });
-      }
-
-      // Save token & redirect
-      if (data?.session) {
-        localStorage.setItem("token", data.session.access_token);
+      if (session) {
+        localStorage.setItem("token", session.access_token);
         navigate("/home", { replace: true });
+      } else {
+        console.log("No session found.");
+        navigate("/", { replace: true });
       }
     };
 
-    finishLogin();
+    handleSession();
   }, [navigate]);
 
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "100vh",
-        fontSize: "1.4rem",
-        fontWeight: "600",
-      }}
-    >
-      Signing you in…
-    </div>
-  );
+  return <div>Loading...</div>;
 }
