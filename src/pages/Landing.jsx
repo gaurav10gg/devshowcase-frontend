@@ -11,17 +11,20 @@ import { supabase } from "../supabaseClient";
 
 export default function Landing() {
   // ⭐ Correct Google Login Handler (Hosted OAuth Mode)
-  const handleSignIn = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        // Use SUPABASE-HOSTED CALLBACK — REQUIRED FOR YOUR PROJECT
-        redirectTo: `${window.location.origin}/home`,
+ const handleSignIn = async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
       },
-    });
+    },
+  });
 
-    if (error) console.error("Google login error:", error);
-  };
+  if (error) console.error("Google login error:", error);
+};
 
   return (
     <>
