@@ -16,7 +16,7 @@ export default function Landing() {
       provider: "google",
       options: {
         // Use SUPABASE-HOSTED CALLBACK — REQUIRED FOR YOUR PROJECT
-          redirectTo: "http://localhost:5173/home",
+        redirectTo: `${window.location.origin}/home`,
       },
     });
 

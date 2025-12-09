@@ -5,6 +5,7 @@ import axios from "axios";
 import ProjectCard from "../components/ProjectCard";
 import CommentsModal from "../components/CommentsModal"; // 🆕 IMPORT
 import ProjectDetailsModal from "../components/ProjectDetailsModal";
+import { API_URL } from "../config";
 
 export default function Home() {
   const qc = useQueryClient();
@@ -16,7 +17,7 @@ export default function Home() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["projects"],
     queryFn: async () => {
-      const res = await axios.get("http://localhost:5000/api/projects", {
+      const res = await axios.get(`${API_URL}/api/projects`, {
         headers: token ? { Authorization: "Bearer " + token } : undefined,
       });
       return res.data;
@@ -33,14 +34,14 @@ export default function Home() {
       if (liked) {
         // ⭐ UNLIKE
         const res = await axios.delete(
-          `http://localhost:5000/api/projects/${id}/like`,
+          `${API_URL}/api/projects/${id}/like`,
           { headers: { Authorization: "Bearer " + t } }
         );
         return res.data;
       } else {
         // ⭐ LIKE
         const res = await axios.post(
-          `http://localhost:5000/api/projects/${id}/like`,
+          `${API_URL}/api/projects/${id}/like`,
           {},
           { headers: { Authorization: "Bearer " + t } }
         );

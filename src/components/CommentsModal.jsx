@@ -9,6 +9,8 @@ import {
 } from "@mui/material";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { API_URL } from "../config";   // ✅ ADDED THIS
+
 
 export default function CommentsModal({ open, onClose, project }) {
   const qc = useQueryClient();
@@ -22,7 +24,7 @@ export default function CommentsModal({ open, onClose, project }) {
     queryKey: ["comments", project?.id],
     queryFn: async () => {
       const res = await axios.get(
-        `http://localhost:5000/api/comments/${project.id}`
+        `${API_URL}/api/comments/${project.id}`
       );
       return res.data;
     },
@@ -36,7 +38,7 @@ export default function CommentsModal({ open, onClose, project }) {
   const addComment = useMutation({
     mutationFn: async () => {
       return axios.post(
-        `http://localhost:5000/api/comments/${project.id}`,
+        `${API_URL}/api/comments/${project.id}`,
         { text },
         { headers: { Authorization: "Bearer " + token } }
       );

@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { supabase } from "../supabaseClient";
+import { API_URL } from "../config";
 
 export default function Settings() {
   const [loading, setLoading] = useState(false);
@@ -28,7 +29,7 @@ export default function Settings() {
   useEffect(() => {
     const loadProfile = async () => {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/users/me", {
+      const res = await axios.get(`${API_URL}/api/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -44,7 +45,7 @@ export default function Settings() {
       const token = localStorage.getItem("token");
 
       await axios.put(
-        "http://localhost:5000/api/users/me",
+        `${API_URL}/api/users/me`,
         userInfo,
         {
           headers: {
@@ -71,7 +72,7 @@ export default function Settings() {
     formData.append("avatar", file);
 
     const res = await axios.post(
-      "http://localhost:5000/api/upload/avatar",
+      `${API_URL}/api/upload/avatar`,
       formData,
       {
         headers: {
