@@ -1,48 +1,40 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import Landing from "../pages/Landing";
-import Home from "../pages/Home";
-import MyProjects from "../pages/MyProjects";
-import Settings from "../pages/Settings";
-import About from "../pages/About";
-import AppLayout from "../layouts/AppLayout";
-import AuthCallback from "../pages/AuthCallback";
-import ProjectPage from "../pages/ProjectPage"; // ✅ NEW IMPORT
+import { useState } from "react";
+import { Box } from "@mui/material";
+import Sidebar from "../components/Sidebar";
+import Topbar from "../components/Topbar";
+import { Outlet } from "react-router-dom";
 
-// ------------------------------------
-// Protected Route
-// ------------------------------------
-function ProtectedRoute({ children }) {
-  const token = localStorage.getItem("access_token");
-  return token ? children : <Navigate to="/" replace />;
-}
-export default function AppRouter() {
+export default function AppLayout() {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
   return (
-    <Routes>
-      {/* Public */}
-      <Route path="/" element={<Landing />} />
+    <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+      
+      {/* Sidebar */}
+      <Sidebar open={sidebarOpen} />
 
-      {/* OAuth callback */}
-      <Route path="/auth/callback" element={<AuthCallback />} />
+      {/* Main area */}
+      <Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
+        
+        {/* Topbar */}
+        <Topbar
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        />
 
-      {/* Protected */}
-      <Route
-        element={
-          <ProtectedRoute>
-            <AppLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path="/home" element={<Home />} />
-        <Route path="/my-projects" element={<MyProjects />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/about" element={<About />} />
-
-        {/* ✅ NEW PROJECT DETAILS PAGE */}
-        <Route path="/project/:id" element={<ProjectPage />} />
-      </Route>
-
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* Page content */}
+        <Box
+          sx={{
+            flexGrow: 1,
+            overflowY: "auto",
+            bgcolor: "#f3f4f6",
+            p: 3,
+            mt: "64px"  // height of topbar
+          }}
+        >
+          <Outlet />
+        </Box>
+      </Box>
+    </Box>
   );
 }
