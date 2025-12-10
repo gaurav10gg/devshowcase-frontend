@@ -24,6 +24,7 @@ export default function MyProjects() {
     image: "",
     github: "",
     live: "",
+    tags: "",          // ⭐ NEW FIELD
   });
 
   const { data, isLoading, refetch } = useQuery({
@@ -43,14 +44,21 @@ export default function MyProjects() {
 
     try {
       const res = await axios.post(
-        `${API_URL}/api/projects`,
-        form,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      `${API_URL}/api/projects`,
+      {
+        ...form,
+        tags: form.tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter((t) => t.length > 0),
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
 
       console.log("Project created:", res.data);
       setOpen(false);
@@ -62,7 +70,9 @@ export default function MyProjects() {
         image: "",
         github: "",
         live: "",
+        tags: "",   // ⭐ ADD THIS
       });
+
     } catch (err) {
       console.error("Error creating project:", err);
       alert("Failed to create project");
@@ -205,7 +215,15 @@ export default function MyProjects() {
               onChange={(e) => setForm({ ...form, live: e.target.value })}
               fullWidth
             />
-
+            <TextField
+              label="Tags (comma separated)"
+              value={form.tags}
+              onChange={(e) => setForm({ ...form, tags: e.target.value })}
+              fullWidth
+              helperText="Example: ai, blockchain, webapp"
+            />
+  
+            
             <Button variant="contained" onClick={createProject}>
               Create
             </Button>
