@@ -15,6 +15,12 @@ export async function likeProject(id) {
   return res.data;
 }
 
+export async function fetchProjectById(id) {
+  const res = await axios.get(`${API_URL}/projects/${id}`);
+  return res.data;
+}
+
+
 export async function unlikeProject(id) {
   const res = await axios.delete(
     `${API_URL}/projects/${id}/like`,

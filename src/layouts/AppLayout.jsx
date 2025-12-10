@@ -3,6 +3,8 @@ import { Box } from "@mui/material";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 import { Outlet } from "react-router-dom";
+import ProjectPage from "../pages/ProjectPage";
+
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -21,6 +23,7 @@ export default function AppLayout() {
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
+        <Route path="/project/:id" element={<ProjectPage />} />
 
         {/* Page content */}
         <Box
