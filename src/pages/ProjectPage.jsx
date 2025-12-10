@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import { fetchProjectById, likeProject, unlikeProject } from "../api/projects";
 import { getAuthHeaders } from "../api/index";
 import axios from "axios";
+import { API_URL } from "../config";
+
 
 export default function ProjectPage() {
   const { id } = useParams();
