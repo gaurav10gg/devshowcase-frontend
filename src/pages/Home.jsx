@@ -6,10 +6,12 @@ import ProjectCard from "../components/ProjectCard";
 import CommentsModal from "../components/CommentsModal"; // 🆕 IMPORT
 import ProjectDetailsModal from "../components/ProjectDetailsModal";
 import { API_URL } from "../config";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
   const qc = useQueryClient();
   const token = localStorage.getItem("token");
+ const navigate = useNavigate();
 
   // ----------------------------------------
   // FETCH ALL PROJECTS
@@ -214,24 +216,27 @@ const openProjectModal = (project) => {
               <Skeleton width="30%" />
             </Box>
           ))}
-
+          
         {/* Project Feed */}
-        {!isLoading &&
-          data &&
-          data.map((project) => (
-            <ProjectCard
-              key={project.id}
-              title={project.title}
-              short_desc={project.short_desc}
-              image={project.image}
-              likes={project.likes}
-              comments={project.comments_count ?? 0}
-              liked={project.liked}
-              onLike={() => handleLike(project)}
-              onClick={() => openProjectModal(project)}
-              onCommentsClick={() => openCommentsModal(project)}
-            />
-          ))}
+       {!isLoading &&
+        data &&
+        data.map((project) => (
+          <ProjectCard
+            key={project.id}
+            title={project.title}
+            short_desc={project.short_desc}
+            image={project.image}
+            likes={project.likes}
+            comments={project.comments_count ?? 0}
+            liked={project.liked}
+            onLike={() => handleLike(project)}
+
+            // 🔵 OPEN FULL PROJECT PAGE
+            onClick={() => navigate(`/project/${project.id}`)}
+
+            onCommentsClick={() => openCommentsModal(project)}
+          />
+        ))}
       </Box>
 
       {/* EMPTY STATE */}
