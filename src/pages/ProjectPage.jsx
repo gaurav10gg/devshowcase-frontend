@@ -30,7 +30,7 @@ export default function ProjectPage() {
   async function loadComments() {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/comments/${id}`
+        `${API_URL}/comments/${id}`
       );
       setComments(res.data);
     } catch (err) {
@@ -65,7 +65,7 @@ export default function ProjectPage() {
 
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/comments/${id}`,
+        `${API_URL}/comments/${id}`,
         { text: commentText },
         { headers: getAuthHeaders() }
       );
