@@ -10,9 +10,21 @@ export function useThemeMode() {
 export default function ThemeModeProvider({ children }) {
   const [mode, setMode] = useState("light");
 
-  const toggleTheme = () => {
-    setMode((prev) => (prev === "light" ? "dark" : "light"));
-  };
+ const toggleTheme = () => {
+  setMode((prev) => {
+    const next = prev === "light" ? "dark" : "light";
+
+    // ⭐ Add/remove HTML class for Tailwind / CSS
+    if (next === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+
+    return next;
+  });
+};
+
 
   const theme = useMemo(
     () =>
