@@ -4,3 +4,31 @@ html, body {
   background: #f9fafb;
   overflow-x: hidden;
 }
+/* GLOBAL DARK MODE */
+html.dark body {
+  background-color: #0f0f0f;
+  color: #e5e5e5;
+}
+
+/* Card backgrounds */
+html.dark .card {
+  background-color: #181818 !important;
+  border-color: #333 !important;
+}
+
+/* Text */
+html.dark .text-muted {
+  color: #aaa !important;
+}
+
+/* Sidebar */
+html.dark .sidebar {
+  background-color: #111 !important;
+  color: white !important;
+}
+
+/* Topbar fix */
+html.dark .topbar {
+  background-color: #0f0f0f !important;
+  border-bottom-color: #222 !important;
+}
