@@ -4,14 +4,19 @@ import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import App from "./App"; // ✅ Use App, not AppRouter
+import App from "./App";
+import ThemeModeProvider from "./context/ThemeContext";   // ⭐ Add this
 
 const client = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <QueryClientProvider client={client}>
-      <App />
+      <ThemeModeProvider>     {/* ⭐ Wrap App here */}
+        <App />
+      </ThemeModeProvider>
     </QueryClientProvider>
   </BrowserRouter>
 );
+
+

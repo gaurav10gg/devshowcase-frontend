@@ -1,17 +1,24 @@
 import { Box, IconButton, Typography, Avatar, Button } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import LightModeIcon from "@mui/icons-material/LightMode";
+
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { API_URL } from "../config";
+
+import { useThemeMode } from "../context/ThemeContext";
+
 export default function Topbar({ sidebarOpen, onToggleSidebar }) {
   const navigate = useNavigate();
-
   const token = localStorage.getItem("token");
 
-  // ⭐ Fetch logged-in user (with avatar)
+  const { mode, toggleTheme } = useThemeMode(); // ⭐ Dark Mode Hook
+
+  // Fetch user
   const { data: user } = useQuery({
     queryKey: ["me"],
     queryFn: async () => {
@@ -32,7 +39,7 @@ export default function Topbar({ sidebarOpen, onToggleSidebar }) {
     <Box
       sx={{
         height: 64,
-        bgcolor: "white",
+        bgcolor: "background.paper",
         borderBottom: "1px solid #e5e7eb",
         px: 2,
         display: "flex",
@@ -57,10 +64,15 @@ export default function Topbar({ sidebarOpen, onToggleSidebar }) {
         </Typography>
       </Box>
 
-      {/* Right Side (Avatar + Logout) */}
+      {/* Right Side */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        
-        {/* ⭐ Avatar now uses uploaded image */}
+
+        {/* ⭐ DARK MODE TOGGLE BUTTON */}
+        <IconButton onClick={toggleTheme}>
+          {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
+        </IconButton>
+
+        {/* Avatar */}
         <Avatar 
           src={user?.avatar || null}
           sx={{ width: 34, height: 34 }}
