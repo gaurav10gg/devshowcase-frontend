@@ -104,7 +104,7 @@ export default function About() {
           }}
         >
           <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
-            🌱 Grow as a Developer
+            Grow as a Developer
           </Typography>
           <Typography
             variant="body2"
