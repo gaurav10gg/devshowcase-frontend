@@ -5,7 +5,6 @@ import { getAuthHeaders } from "../api/index";
 import axios from "axios";
 import { API_URL } from "../config";
 
-
 export default function ProjectPage() {
   const { id } = useParams();
 
@@ -31,31 +30,10 @@ export default function ProjectPage() {
   // -----------------------------
   async function loadComments() {
     try {
-      const res = await axios.get(
-        `${API_URL}/comments/${id}`
-      );
+      const res = await axios.get(`${API_URL}/comments/${id}`);
       setComments(res.data);
     } catch (err) {
       console.log("Failed to load comments:", err);
-    }
-  }
-
-  // -----------------------------
-  // LIKE / UNLIKE
-  // -----------------------------
-  async function handleLike() {
-    if (!project) return;
-
-    try {
-      if (project.liked) {
-        const res = await unlikeProject(project.id);
-        setProject({ ...project, likes: res.likes, liked: res.liked });
-      } else {
-        const res = await likeProject(project.id);
-        setProject({ ...project, likes: res.likes, liked: res.liked });
-      }
-    } catch (err) {
-      console.log("Like failed:", err);
     }
   }
 
@@ -80,6 +58,25 @@ export default function ProjectPage() {
   }
 
   // -----------------------------
+  // LIKE / UNLIKE
+  // -----------------------------
+  async function handleLike() {
+    if (!project) return;
+
+    try {
+      if (project.liked) {
+        const res = await unlikeProject(project.id);
+        setProject({ ...project, likes: res.likes, liked: res.liked });
+      } else {
+        const res = await likeProject(project.id);
+        setProject({ ...project, likes: res.likes, liked: res.liked });
+      }
+    } catch (err) {
+      console.log("Like failed:", err);
+    }
+  }
+
+  // -----------------------------
   // INITIAL LOAD
   // -----------------------------
   useEffect(() => {
@@ -96,47 +93,30 @@ export default function ProjectPage() {
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-
-      {/* IMAGE */}
       <img
         src={project.image}
         alt={project.title}
         className="w-full h-72 object-cover rounded-xl"
       />
 
-      {/* TITLE */}
       <h1 className="text-3xl font-bold mt-4">{project.title}</h1>
-
-      {/* SHORT DESCRIPTION */}
       <p className="text-gray-600 mt-2">{project.short_desc}</p>
-
-      {/* FULL DESCRIPTION */}
       <p className="text-gray-700 mt-4 leading-7">{project.full_desc}</p>
 
-      {/* EXTERNAL LINKS */}
       <div className="flex gap-3 mt-5">
         {project.github && (
-          <a
-            href={project.github}
-            target="_blank"
-            className="px-4 py-2 border rounded-lg text-sm"
-          >
+          <a href={project.github} target="_blank" className="px-4 py-2 border rounded-lg text-sm">
             GitHub
           </a>
         )}
 
         {project.live && (
-          <a
-            href={project.live}
-            target="_blank"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm"
-          >
+          <a href={project.live} target="_blank" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">
             Live Demo
           </a>
         )}
       </div>
 
-      {/* LIKES */}
       <button
         onClick={handleLike}
         className="mt-4 flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg"
@@ -144,11 +124,9 @@ export default function ProjectPage() {
         {project.liked ? "❤️" : "🤍"} {project.likes} Likes
       </button>
 
-      {/* COMMENTS SECTION */}
       <div className="mt-10">
         <h2 className="text-xl font-semibold mb-3">Comments</h2>
 
-        {/* ADD COMMENT */}
         <div className="flex gap-2">
           <input
             value={commentText}
@@ -164,7 +142,6 @@ export default function ProjectPage() {
           </button>
         </div>
 
-        {/* COMMENT LIST */}
         <div className="mt-5 space-y-3">
           {comments.map((c) => (
             <div key={c.id} className="border p-3 rounded-lg">
