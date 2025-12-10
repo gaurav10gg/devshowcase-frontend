@@ -10,13 +10,16 @@ import {
   CardMedia,
   CircularProgress,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";   // ⭐ REQUIRED FOR DARK MODE
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useState } from "react";
 import { API_URL } from "../config";
 
 export default function MyProjects() {
+  const theme = useTheme(); // ⭐ MUI theme (light/dark)
   const [open, setOpen] = useState(false);
+
   const [form, setForm] = useState({
     title: "",
     short_desc: "",
@@ -24,7 +27,7 @@ export default function MyProjects() {
     image: "",
     github: "",
     live: "",
-    tags: "",          // ⭐ NEW FIELD
+    tags: "",
   });
 
   const { data, isLoading, refetch } = useQuery({
@@ -34,7 +37,6 @@ export default function MyProjects() {
       const res = await axios.get(`${API_URL}/api/projects/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Loaded data:", res.data);
       return res.data;
     },
   });
@@ -44,23 +46,19 @@ export default function MyProjects() {
 
     try {
       const res = await axios.post(
-      `${API_URL}/api/projects`,
-      {
-        ...form,
-        tags: form.tags
-          .split(",")
-          .map((t) => t.trim())
-          .filter((t) => t.length > 0),
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+        `${API_URL}/api/projects`,
+        {
+          ...form,
+          tags: form.tags
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t) => t.length > 0),
         },
-      }
-    );
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-
-      console.log("Project created:", res.data);
       setOpen(false);
       refetch();
       setForm({
@@ -70,16 +68,14 @@ export default function MyProjects() {
         image: "",
         github: "",
         live: "",
-        tags: "",   // ⭐ ADD THIS
+        tags: "",
       });
-
     } catch (err) {
       console.error("Error creating project:", err);
       alert("Failed to create project");
     }
   };
 
-  // 🔥 HANDLE FILE UPLOAD
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -88,18 +84,13 @@ export default function MyProjects() {
     const formData = new FormData();
     formData.append("image", file);
 
-    const res = await axios.post(
-      `${API_URL}/api/upload`,
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+    const res = await axios.post(`${API_URL}/api/upload`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
-    // Save returned URL to form
     setForm((prev) => ({ ...prev, image: res.data.url }));
   };
 
@@ -112,13 +103,19 @@ export default function MyProjects() {
         </Button>
       </Box>
 
-      {/* Loading State */}
       {isLoading ? (
         <CircularProgress />
       ) : (
         <Stack spacing={2} mt={3}>
           {data?.map((project) => (
-            <Card key={project.id} sx={{ display: "flex" }}>
+            <Card
+              key={project.id}
+              sx={{
+                display: "flex",
+                bgcolor: theme.palette.background.paper,
+                color: theme.palette.text.primary,
+              }}
+            >
               <CardMedia
                 component="img"
                 image={project.image}
@@ -136,14 +133,16 @@ export default function MyProjects() {
         </Stack>
       )}
 
-      {/* MODAL FOR NEW PROJECT */}
+      {/* MODAL */}
       <Modal open={open} onClose={() => setOpen(false)}>
         <Box
           sx={{
             width: 500,
             p: 4,
-            background: "white",
+            bgcolor: theme.palette.background.paper, // ⭐ DARK MODE FIX
+            color: theme.palette.text.primary, // ⭐ DARK MODE FIX
             borderRadius: 2,
+            boxShadow: 24,
             position: "absolute",
             top: "50%",
             left: "50%",
@@ -160,15 +159,14 @@ export default function MyProjects() {
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               fullWidth
+              InputLabelProps={{ style: { color: theme.palette.text.primary } }}
             />
 
-            {/* 🔥 FILE UPLOAD BUTTON */}
             <Button variant="outlined" component="label">
               Upload Image
-              <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
+              <input hidden type="file" accept="image/*" onChange={handleImageUpload} />
             </Button>
 
-            {/* 🔥 IMAGE PREVIEW */}
             {form.image && (
               <img
                 src={form.image}
@@ -215,15 +213,15 @@ export default function MyProjects() {
               onChange={(e) => setForm({ ...form, live: e.target.value })}
               fullWidth
             />
+
             <TextField
               label="Tags (comma separated)"
               value={form.tags}
               onChange={(e) => setForm({ ...form, tags: e.target.value })}
-              fullWidth
               helperText="Example: ai, blockchain, webapp"
+              fullWidth
             />
-  
-            
+
             <Button variant="contained" onClick={createProject}>
               Create
             </Button>
