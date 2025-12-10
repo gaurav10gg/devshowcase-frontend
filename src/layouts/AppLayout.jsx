@@ -12,10 +12,9 @@ import ProjectPage from "../pages/ProjectPage"; // ✅ NEW IMPORT
 // Protected Route
 // ------------------------------------
 function ProtectedRoute({ children }) {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   return token ? children : <Navigate to="/" replace />;
 }
-
 export default function AppRouter() {
   return (
     <Routes>
