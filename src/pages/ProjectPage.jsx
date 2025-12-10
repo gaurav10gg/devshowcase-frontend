@@ -5,6 +5,17 @@ import { getAuthHeaders } from "../api/index";
 import axios from "axios";
 import { API_URL } from "../config";
 
+import {
+  Box,
+  Typography,
+  Button,
+  Card,
+  CardMedia,
+  CardContent,
+  TextField,
+  Stack
+} from "@mui/material";
+
 export default function ProjectPage() {
   const { id } = useParams();
 
@@ -13,9 +24,6 @@ export default function ProjectPage() {
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
 
-  // -----------------------------
-  // LOAD PROJECT
-  // -----------------------------
   async function loadProject() {
     try {
       const data = await fetchProjectById(id);
@@ -25,9 +33,6 @@ export default function ProjectPage() {
     }
   }
 
-  // -----------------------------
-  // LOAD COMMENTS
-  // -----------------------------
   async function loadComments() {
     try {
       const res = await axios.get(`${API_URL}/comments/${id}`);
@@ -37,9 +42,24 @@ export default function ProjectPage() {
     }
   }
 
-  // -----------------------------
-  // ADD COMMENT
-  // -----------------------------
+  async function handleLike() {
+    if (!project) return;
+
+    try {
+      const result = project.liked
+        ? await unlikeProject(project.id)
+        : await likeProject(project.id);
+
+      setProject({
+        ...project,
+        likes: result.likes,
+        liked: result.liked
+      });
+    } catch (err) {
+      console.log("Like failed:", err);
+    }
+  }
+
   async function handleAddComment() {
     if (!commentText.trim()) return;
 
@@ -57,28 +77,6 @@ export default function ProjectPage() {
     }
   }
 
-  // -----------------------------
-  // LIKE / UNLIKE
-  // -----------------------------
-  async function handleLike() {
-    if (!project) return;
-
-    try {
-      if (project.liked) {
-        const res = await unlikeProject(project.id);
-        setProject({ ...project, likes: res.likes, liked: res.liked });
-      } else {
-        const res = await likeProject(project.id);
-        setProject({ ...project, likes: res.likes, liked: res.liked });
-      }
-    } catch (err) {
-      console.log("Like failed:", err);
-    }
-  }
-
-  // -----------------------------
-  // INITIAL LOAD
-  // -----------------------------
   useEffect(() => {
     async function init() {
       await loadProject();
@@ -88,69 +86,86 @@ export default function ProjectPage() {
     init();
   }, [id]);
 
-  if (loading) return <div className="p-6">Loading...</div>;
-  if (!project) return <div className="p-6">Project not found.</div>;
+  if (loading) return <Box p={4}>Loading...</Box>;
+  if (!project) return <Box p={4}>Project not found.</Box>;
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <img
-        src={project.image}
-        alt={project.title}
-        className="w-full h-72 object-cover rounded-xl"
-      />
+    <Box maxWidth="900px" mx="auto" p={3}>
+      <Card sx={{ borderRadius: 3, mb: 3 }}>
+        <CardMedia
+          component="img"
+          height="340"
+          image={project.image}
+          alt={project.title}
+        />
 
-      <h1 className="text-3xl font-bold mt-4">{project.title}</h1>
-      <p className="text-gray-600 mt-2">{project.short_desc}</p>
-      <p className="text-gray-700 mt-4 leading-7">{project.full_desc}</p>
+        <CardContent>
+          <Typography variant="h4" fontWeight={700}>
+            {project.title}
+          </Typography>
 
-      <div className="flex gap-3 mt-5">
-        {project.github && (
-          <a href={project.github} target="_blank" className="px-4 py-2 border rounded-lg text-sm">
-            GitHub
-          </a>
-        )}
+          <Typography sx={{ mt: 1 }} color="text.secondary">
+            {project.short_desc}
+          </Typography>
 
-        {project.live && (
-          <a href={project.live} target="_blank" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">
-            Live Demo
-          </a>
-        )}
-      </div>
+          <Typography sx={{ mt: 2, lineHeight: 1.6 }}>
+            {project.full_desc}
+          </Typography>
 
-      <button
-        onClick={handleLike}
-        className="mt-4 flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg"
-      >
-        {project.liked ? "❤️" : "🤍"} {project.likes} Likes
-      </button>
+          {/* Buttons */}
+          <Stack direction="row" spacing={2} mt={3}>
+            {project.github && (
+              <Button variant="outlined" href={project.github} target="_blank">
+                GitHub
+              </Button>
+            )}
 
-      <div className="mt-10">
-        <h2 className="text-xl font-semibold mb-3">Comments</h2>
+            {project.live && (
+              <Button variant="contained" href={project.live} target="_blank">
+                Live Demo
+              </Button>
+            )}
+          </Stack>
 
-        <div className="flex gap-2">
-          <input
+          <Button
+            onClick={handleLike}
+            variant="contained"
+            sx={{ mt: 3 }}
+            color={project.liked ? "error" : "primary"}
+          >
+            {project.liked ? "❤️ Liked" : "🤍 Like"} {project.likes}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Comments */}
+      <Box mt={4}>
+        <Typography variant="h5" mb={2}>
+          Comments
+        </Typography>
+
+        <Stack direction="row" spacing={2} mb={2}>
+          <TextField
+            fullWidth
+            label="Write a comment..."
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Write a comment..."
-            className="flex-1 border px-3 py-2 rounded-lg"
           />
-          <button
-            onClick={handleAddComment}
-            className="px-4 py-2 bg-black text-white rounded-lg"
-          >
-            Post
-          </button>
-        </div>
 
-        <div className="mt-5 space-y-3">
+          <Button variant="contained" onClick={handleAddComment}>
+            Post
+          </Button>
+        </Stack>
+
+        <Stack spacing={2}>
           {comments.map((c) => (
-            <div key={c.id} className="border p-3 rounded-lg">
-              <p className="font-medium">{c.user_name || "User"}</p>
-              <p className="text-gray-700">{c.text}</p>
-            </div>
+            <Card key={c.id} sx={{ p: 2 }}>
+              <Typography fontWeight={600}>{c.user_name || "User"}</Typography>
+              <Typography>{c.text}</Typography>
+            </Card>
           ))}
-        </div>
-      </div>
-    </div>
+        </Stack>
+      </Box>
+    </Box>
   );
 }
