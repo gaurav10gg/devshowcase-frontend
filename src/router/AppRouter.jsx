@@ -6,6 +6,7 @@ import Settings from "../pages/Settings";
 import About from "../pages/About";
 import AppLayout from "../layouts/AppLayout";
 import AuthCallback from "../pages/AuthCallback";
+import ProjectPage from "../pages/ProjectPage";
 
 
 // ------------------------------------
@@ -38,6 +39,7 @@ export default function AppRouter() {
         <Route path="/my-projects" element={<MyProjects />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/about" element={<About />} />
+        <Route path="/project/:id" element={<ProjectPage />} />
       </Route>
 
       {/* Fallback */}
