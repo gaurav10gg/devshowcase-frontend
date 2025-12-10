@@ -37,10 +37,9 @@ export default function Topbar({ sidebarOpen, onToggleSidebar }) {
 
   return (
     <Box
+      className="topbar"
       sx={{
         height: 64,
-        bgcolor: "background.paper",
-        borderBottom: "1px solid #e5e7eb",
         px: 2,
         display: "flex",
         alignItems: "center",
@@ -51,15 +50,33 @@ export default function Topbar({ sidebarOpen, onToggleSidebar }) {
         right: 0,
         transition: "left 0.25s ease",
         zIndex: 10,
+
+        /* ⭐ LIGHT MODE COLORS */
+        bgcolor: mode === "light" ? "#ffffff" : "#161b22",
+        borderBottom: mode === "light"
+          ? "1px solid #e5e7eb"
+          : "1px solid #30363d",
+        color: mode === "light" ? "#111" : "#f0f6fc"
       }}
     >
       {/* Left side */}
       <Box sx={{ display: "flex", alignItems: "center" }}>
-        <IconButton onClick={onToggleSidebar}>
+        <IconButton
+          onClick={onToggleSidebar}
+          sx={{
+            color: mode === "light" ? "#111" : "#f0f6fc"
+          }}
+        >
           <MenuIcon />
         </IconButton>
 
-        <Typography sx={{ fontWeight: 600, ml: 2 }}>
+        <Typography
+          sx={{
+            fontWeight: 600,
+            ml: 2,
+            color: mode === "light" ? "#111" : "#f0f6fc"
+          }}
+        >
           Dev Showcase
         </Typography>
       </Box>
@@ -68,18 +85,29 @@ export default function Topbar({ sidebarOpen, onToggleSidebar }) {
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
 
         {/* ⭐ DARK MODE TOGGLE BUTTON */}
-        <IconButton onClick={toggleTheme}>
+        <IconButton
+          onClick={toggleTheme}
+          sx={{
+            color: mode === "light" ? "#111" : "#f0f6fc"
+          }}
+        >
           {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
         </IconButton>
 
         {/* Avatar */}
-        <Avatar 
+        <Avatar
           src={user?.avatar || null}
-          sx={{ width: 34, height: 34 }}
+          sx={{
+            width: 34,
+            height: 34,
+            bgcolor: mode === "light" ? "#e5e7eb" : "#30363d",
+            color: mode === "light" ? "#111" : "#f0f6fc"
+          }}
         >
           {!user?.avatar && user?.name ? user.name[0] : "U"}
         </Avatar>
 
+        {/* Logout button */}
         <Button
           variant="outlined"
           size="small"
@@ -89,6 +117,16 @@ export default function Topbar({ sidebarOpen, onToggleSidebar }) {
             textTransform: "none",
             borderRadius: "8px",
             fontWeight: 600,
+
+            /* Light mode */
+            borderColor: mode === "light" ? "#d1d5db" : "#30363d",
+            color: mode === "light" ? "#111" : "#f0f6fc",
+            background: mode === "light" ? "#fff" : "#21262d",
+
+            "&:hover": {
+              borderColor: mode === "light" ? "#111" : "#8b949e",
+              background: mode === "light" ? "#f9fafb" : "#30363d",
+            }
           }}
         >
           Logout

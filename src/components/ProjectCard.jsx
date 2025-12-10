@@ -11,6 +11,7 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 
+import { useThemeMode } from "../context/ThemeContext"; // ⭐ add dark mode hook
 
 export default function ProjectCard({
   title,
@@ -21,8 +22,10 @@ export default function ProjectCard({
   liked,
   onLike,
   onClick,
-  onCommentsClick, // 🆕
+  onCommentsClick,
 }) {
+  const { mode } = useThemeMode(); // ⭐ detect mode
+
   return (
     <Card
       onClick={onClick}
@@ -31,9 +34,20 @@ export default function ProjectCard({
         cursor: "pointer",
         overflow: "hidden",
         transition: "0.2s",
+
+        /* ⭐ BACKGROUND + BORDER for Dark Mode */
+        bgcolor: mode === "light" ? "#ffffff" : "#1b1f24",
+        border:
+          mode === "light"
+            ? "1px solid #e5e7eb"
+            : "1px solid #30363d",
+
         "&:hover": {
           transform: "translateY(-4px)",
-          boxShadow: "0 8px 26px rgba(0,0,0,0.12)",
+          boxShadow:
+            mode === "light"
+              ? "0 8px 26px rgba(0,0,0,0.12)"
+              : "0 8px 26px rgba(0,0,0,0.55)",
         },
       }}
     >
@@ -43,24 +57,43 @@ export default function ProjectCard({
         height="180"
         image={image}
         alt={title}
-        sx={{ objectFit: "cover" }}
+        sx={{
+          objectFit: "cover",
+          /* Slight dark blend for dark mode thumbnails */
+          filter: mode === "light" ? "none" : "brightness(0.85)",
+        }}
       />
 
       {/* Content */}
-      <CardContent>
+      <CardContent
+        sx={{
+          color: mode === "light" ? "#111" : "#f0f6fc",
+        }}
+      >
         <Typography
           variant="h6"
-          sx={{ fontWeight: 700, mb: 1, color: "#111" }}
+          sx={{
+            fontWeight: 700,
+            mb: 1,
+            color: mode === "light" ? "#111" : "#f0f6fc",
+          }}
         >
           {title}
         </Typography>
 
-        <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: mode === "light" ? "#64748b" : "#8b949e",
+            mb: 2,
+          }}
+        >
           {short_desc}
         </Typography>
 
         {/* Footer: Likes + Comments */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          
           {/* Like Button */}
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <IconButton
@@ -69,6 +102,9 @@ export default function ProjectCard({
                 e.stopPropagation();
                 onLike && onLike();
               }}
+              sx={{
+                color: mode === "light" ? "#111" : "#f0f6fc",
+              }}
             >
               {liked ? (
                 <FavoriteIcon sx={{ color: "#e63946" }} />
@@ -76,10 +112,17 @@ export default function ProjectCard({
                 <FavoriteBorderIcon />
               )}
             </IconButton>
-            <Typography variant="body2">{likes}</Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                color: mode === "light" ? "#111" : "#f0f6fc",
+              }}
+            >
+              {likes}
+            </Typography>
           </Box>
 
-          {/* Comment Count / Button */}
+          {/* Comment Button */}
           <Box sx={{ display: "flex", alignItems: "center", ml: 1 }}>
             <IconButton
               size="small"
@@ -87,10 +130,24 @@ export default function ProjectCard({
                 e.stopPropagation();
                 onCommentsClick && onCommentsClick();
               }}
+              sx={{
+                color: mode === "light" ? "#111" : "#f0f6fc",
+              }}
             >
-              <ChatBubbleOutlineIcon sx={{ fontSize: "20px", opacity: 0.7 }} />
+              <ChatBubbleOutlineIcon
+                sx={{
+                  fontSize: "20px",
+                  opacity: 0.7,
+                }}
+              />
             </IconButton>
-            <Typography variant="body2" sx={{ ml: 0.5 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                ml: 0.5,
+                color: mode === "light" ? "#111" : "#f0f6fc",
+              }}
+            >
               {comments}
             </Typography>
           </Box>

@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState, useEffect } from "react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 const ThemeModeContext = createContext();
@@ -10,21 +10,28 @@ export function useThemeMode() {
 export default function ThemeModeProvider({ children }) {
   const [mode, setMode] = useState("light");
 
- const toggleTheme = () => {
-  setMode((prev) => {
-    const next = prev === "light" ? "dark" : "light";
+  const toggleTheme = () => {
+    setMode((prev) => {
+      const next = prev === "light" ? "dark" : "light";
 
-    // ⭐ Add/remove HTML class for Tailwind / CSS
-    if (next === "dark") {
+      if (next === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+
+      return next;
+    });
+  };
+
+  // ⭐ Ensure correct mode on refresh
+  useEffect(() => {
+    if (mode === "dark") {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
-
-    return next;
-  });
-};
-
+  }, [mode]);
 
   const theme = useMemo(
     () =>

@@ -5,8 +5,11 @@ import {
   Stack,
   Button,
 } from "@mui/material";
+import { useThemeMode } from "../context/ThemeContext"; // ⭐ Add dark mode hook
 
 export default function ProjectDetailsModal({ open, onClose, project }) {
+  const { mode } = useThemeMode(); // ⭐ detect theme
+
   if (!project) return null;
 
   return (
@@ -14,7 +17,10 @@ export default function ProjectDetailsModal({ open, onClose, project }) {
       <Box
         sx={{
           width: "600px",
-          bgcolor: "white",
+
+          /* ⭐ LIGHT vs DARK BG */
+          bgcolor: mode === "light" ? "#ffffff" : "#161b22",
+
           borderRadius: 3,
           p: 3,
           position: "absolute",
@@ -23,6 +29,14 @@ export default function ProjectDetailsModal({ open, onClose, project }) {
           transform: "translate(-50%, -50%)",
           maxHeight: "85vh",
           overflowY: "auto",
+
+          /* ⭐ BORDER in dark mode */
+          border:
+            mode === "light"
+              ? "1px solid #e5e7eb"
+              : "1px solid #30363d",
+
+          color: mode === "light" ? "#111" : "#f0f6fc",
         }}
       >
         {/* IMAGE */}
@@ -38,17 +52,35 @@ export default function ProjectDetailsModal({ open, onClose, project }) {
         />
 
         {/* TITLE */}
-        <Typography variant="h5" fontWeight={700} mt={2}>
+        <Typography
+          variant="h5"
+          fontWeight={700}
+          mt={2}
+          sx={{ color: mode === "light" ? "#111" : "#f0f6fc" }}
+        >
           {project.title}
         </Typography>
 
         {/* SHORT DESC */}
-        <Typography variant="body1" sx={{ color: "#64748b", mt: 1 }}>
+        <Typography
+          variant="body1"
+          sx={{
+            color: mode === "light" ? "#64748b" : "#8b949e",
+            mt: 1,
+          }}
+        >
           {project.short_desc}
         </Typography>
 
         {/* FULL DESC */}
-        <Typography variant="body2" sx={{ color: "#475569", mt: 2, lineHeight: 1.6 }}>
+        <Typography
+          variant="body2"
+          sx={{
+            color: mode === "light" ? "#475569" : "#c9d1d9",
+            mt: 2,
+            lineHeight: 1.6,
+          }}
+        >
           {project.full_desc}
         </Typography>
 
@@ -60,6 +92,17 @@ export default function ProjectDetailsModal({ open, onClose, project }) {
               component="a"
               href={project.github}
               target="_blank"
+              sx={{
+                borderColor:
+                  mode === "light" ? "#d1d5db" : "#30363d",
+                color: mode === "light" ? "#111" : "#f0f6fc",
+                "&:hover": {
+                  borderColor:
+                    mode === "light" ? "#111" : "#8b949e",
+                  background:
+                    mode === "light" ? "#f9fafb" : "#1b1f24",
+                },
+              }}
             >
               GitHub
             </Button>
@@ -71,6 +114,14 @@ export default function ProjectDetailsModal({ open, onClose, project }) {
               component="a"
               href={project.live}
               target="_blank"
+              sx={{
+                bgcolor:
+                  mode === "light" ? "#2563eb" : "#238636",
+                "&:hover": {
+                  bgcolor:
+                    mode === "light" ? "#1d4ed8" : "#2ea043",
+                },
+              }}
             >
               Live Demo
             </Button>
@@ -80,11 +131,17 @@ export default function ProjectDetailsModal({ open, onClose, project }) {
         {/* FOOTER INFO */}
         <Typography
           variant="caption"
-          sx={{ display: "block", mt: 3, color: "#94a3b8" }}
+          sx={{
+            display: "block",
+            mt: 3,
+            color: mode === "light" ? "#94a3b8" : "#8b949e",
+          }}
         >
-          Likes: {project.likes} | Comments: {project.comments_count ?? 0}
+          Likes: {project.likes} | Comments:{" "}
+          {project.comments_count ?? 0}
         </Typography>
       </Box>
     </Modal>
   );
 }
+

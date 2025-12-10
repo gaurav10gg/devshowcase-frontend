@@ -9,23 +9,22 @@ import {
 } from "@mui/material";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { API_URL } from "../config";   // ✅ ADDED THIS
-
+import { API_URL } from "../config";
+import { useThemeMode } from "../context/ThemeContext"; // ⭐ added for dark mode
 
 export default function CommentsModal({ open, onClose, project }) {
   const qc = useQueryClient();
   const token = localStorage.getItem("token");
+  const { mode } = useThemeMode(); // ⭐ detect light/dark
 
   // ----------------------------------------
-  // FETCH COMMENTS FOR THIS PROJECT
+  // FETCH COMMENTS
   // ----------------------------------------
   const { data: comments } = useQuery({
     enabled: !!project,
     queryKey: ["comments", project?.id],
     queryFn: async () => {
-      const res = await axios.get(
-        `${API_URL}/api/comments/${project.id}`
-      );
+      const res = await axios.get(`${API_URL}/api/comments/${project.id}`);
       return res.data;
     },
   });
@@ -45,7 +44,7 @@ export default function CommentsModal({ open, onClose, project }) {
     },
     onSuccess: () => {
       setText("");
-      qc.invalidateQueries(["comments", project.id]); // refresh comments
+      qc.invalidateQueries(["comments", project.id]);
     },
   });
 
@@ -56,26 +55,43 @@ export default function CommentsModal({ open, onClose, project }) {
       <Box
         sx={{
           width: 500,
-          bgcolor: "white",
           p: 3,
           mx: "auto",
           mt: "10%",
           borderRadius: 2,
+
+          /* ⭐ TRUE GITHUB DARK */
+          bgcolor: mode === "light" ? "#ffffff" : "#161b22",
+          color: mode === "light" ? "#111" : "#f0f6fc",
+
+          border:
+            mode === "light"
+              ? "1px solid #e5e7eb"
+              : "1px solid #30363d",
         }}
       >
-        <Typography variant="h6" sx={{ mb: 2 }}>
+        <Typography
+          variant="h6"
+          sx={{
+            mb: 2,
+            color: mode === "light" ? "#111" : "#f0f6fc",
+          }}
+        >
           Comments for: {project.title}
         </Typography>
 
-        {/* --------------------------- */}
-        {/* EXISTING COMMENTS */}
-        {/* --------------------------- */}
+        {/* COMMENTS LIST */}
         <Stack
           spacing={2}
-          sx={{ maxHeight: 300, overflowY: "auto", mb: 2 }}
+          sx={{
+            maxHeight: 300,
+            overflowY: "auto",
+            mb: 2,
+            pr: 1,
+          }}
         >
           {comments?.length === 0 && (
-            <Typography sx={{ color: "#94a3b8" }}>
+            <Typography sx={{ color: mode === "light" ? "#94a3b8" : "#8b949e" }}>
               No comments yet.
             </Typography>
           )}
@@ -85,27 +101,57 @@ export default function CommentsModal({ open, onClose, project }) {
               key={c.id}
               sx={{
                 p: 1.5,
-                bgcolor: "#f8fafc",
                 borderRadius: 2,
+
+                /* ⭐ Comment bubble background */
+                bgcolor: mode === "light" ? "#f8fafc" : "#1b1f24",
+
+                border:
+                  mode === "light"
+                    ? "1px solid #e5e7eb"
+                    : "1px solid #30363d",
               }}
             >
-              <Typography sx={{ fontWeight: 600 }}>
+              <Typography
+                sx={{
+                  fontWeight: 600,
+                  color: mode === "light" ? "#111" : "#f0f6fc",
+                }}
+              >
                 {c.user_name}
               </Typography>
-              <Typography>{c.text}</Typography>
+
+              <Typography
+                sx={{
+                  color: mode === "light" ? "#111" : "#c9d1d9",
+                }}
+              >
+                {c.text}
+              </Typography>
             </Box>
           ))}
         </Stack>
 
-        {/* --------------------------- */}
-        {/* ADD COMMENT BOX */}
-        {/* --------------------------- */}
+        {/* ADD COMMENT */}
         <Stack direction="row" spacing={2}>
           <TextField
             fullWidth
             placeholder="Write a comment..."
             value={text}
             onChange={(e) => setText(e.target.value)}
+            sx={{
+              /* ⭐ Dark mode textfield */
+              "& .MuiInputBase-root": {
+                bgcolor: mode === "light" ? "#ffffff" : "#0d1117",
+                color: mode === "light" ? "#111" : "#f0f6fc",
+              },
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: mode === "light" ? "#d1d5db" : "#30363d",
+              },
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: mode === "light" ? "#111" : "#8b949e",
+              },
+            }}
           />
 
           <Button
@@ -115,6 +161,12 @@ export default function CommentsModal({ open, onClose, project }) {
               if (text.trim().length === 0) return;
 
               addComment.mutate();
+            }}
+            sx={{
+              bgcolor: mode === "light" ? "#2563eb" : "#238636",
+              "&:hover": {
+                bgcolor: mode === "light" ? "#1d4ed8" : "#2ea043",
+              },
             }}
           >
             Send
