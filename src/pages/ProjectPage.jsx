@@ -13,7 +13,8 @@ import {
   CardMedia,
   CardContent,
   TextField,
-  Stack
+  Stack,
+  Skeleton,   // ⭐ ADDED
 } from "@mui/material";
 
 export default function ProjectPage() {
@@ -53,7 +54,7 @@ export default function ProjectPage() {
       setProject({
         ...project,
         likes: result.likes,
-        liked: result.liked
+        liked: result.liked,
       });
     } catch (err) {
       console.log("Like failed:", err);
@@ -86,7 +87,42 @@ export default function ProjectPage() {
     init();
   }, [id]);
 
-  if (loading) return <Box p={4}>Loading...</Box>;
+  /* ================================
+     ⭐ LOADING SKELETON UI
+  ================================ */
+  if (loading) {
+    return (
+      <Box maxWidth="900px" mx="auto" p={3}>
+        <Card sx={{ borderRadius: 3, mb: 3 }}>
+          <Skeleton variant="rectangular" height={340} />
+
+          <CardContent>
+            <Skeleton width="60%" height={40} />
+            <Skeleton width="80%" height={20} />
+            <Skeleton width="90%" height={20} />
+            <Skeleton width="95%" height={20} sx={{ mb: 2 }} />
+
+            <Stack direction="row" spacing={2} mt={3}>
+              <Skeleton variant="rectangular" width={120} height={40} />
+              <Skeleton variant="rectangular" width={120} height={40} />
+            </Stack>
+
+            <Skeleton variant="rectangular" width={140} height={45} sx={{ mt: 3 }} />
+          </CardContent>
+        </Card>
+
+        <Typography variant="h5" mb={2}>
+          <Skeleton width={150} />
+        </Typography>
+
+        <Stack spacing={2}>
+          <Skeleton variant="rectangular" height={70} />
+          <Skeleton variant="rectangular" height={70} />
+        </Stack>
+      </Box>
+    );
+  }
+
   if (!project) return <Box p={4}>Project not found.</Box>;
 
   return (
@@ -169,3 +205,4 @@ export default function ProjectPage() {
     </Box>
   );
 }
+
