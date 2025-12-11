@@ -18,8 +18,7 @@ export default function AppLayout() {
     <Box
       sx={{
         display: "flex",
-        height: "100vh",
-        overflow: "hidden",
+        minHeight: "100vh",
         bgcolor: theme.palette.background.default,
         color: mode === "dark" ? "#e5e5e5" : "#111",
       }}
