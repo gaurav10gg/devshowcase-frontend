@@ -20,7 +20,7 @@ export default function Sidebar({ open, onClose }) {
 
   return (
     <>
-      {/* ⭐ Mobile overlay */}
+      {/* ⭐ Mobile dark overlay */}
       {open && (
         <Box
           onClick={onClose}
@@ -58,8 +58,12 @@ export default function Sidebar({ open, onClose }) {
           py: 2,
           display: "flex",
           flexDirection: "column",
+
+          // ⭐ PUSH CONTENT DOWN ONLY ON MOBILE (fixes Home icon overlap)
+          pt: { xs: "72px", md: "16px" }, 
         }}
       >
+        {/* MENU LABEL */}
         {open && (
           <Typography
             sx={{
@@ -75,6 +79,7 @@ export default function Sidebar({ open, onClose }) {
           </Typography>
         )}
 
+        {/* MENU ITEMS */}
         {menu.map((item) => {
           const active = location.pathname === item.to;
 
