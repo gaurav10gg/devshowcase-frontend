@@ -45,34 +45,34 @@ export default function ProjectPage() {
 async function handleLike() {
   if (!project) return;
 
-  // ⭐ OPTIMISTIC UI UPDATE
+  // ⭐ Optimistic update first
   const prev = { ...project };
 
-  const newState = {
+  const updated = {
     ...project,
     liked: !project.liked,
     likes: project.liked ? project.likes - 1 : project.likes + 1,
   };
 
-  setProject(newState);
+  setProject(updated);
 
   try {
     const result = project.liked
       ? await unlikeProject(project.id)
       : await likeProject(project.id);
 
-    // ⭐ BACKEND CONFIRMS → update with real values
-    setProject({
-      ...project,
-      likes: result.likes,
+    // ⭐ Sync with backend-confirmed values
+    setProject((p) => ({
+      ...p,
       liked: result.liked,
-    });
+      likes: Number(result.likes),
+    }));
   } catch (err) {
     console.log("Like failed:", err);
-    // ❗ Revert if backend failed
-    setProject(prev);
+    setProject(prev); // revert
   }
 }
+
 
   async function handleAddComment() {
     if (!commentText.trim()) return;
@@ -176,14 +176,37 @@ async function handleLike() {
             )}
           </Stack>
 
-          <Button
+                  <Button
             onClick={handleLike}
-            variant="contained"
-            sx={{ mt: 3 }}
-            color={project.liked ? "error" : "primary"}
+            sx={{
+              mt: 3,
+              display: "flex",
+              alignItems: "center",
+              gap: 1.2,
+              px: 2,
+              py: 1,
+              borderRadius: "10px",
+              border: "1px solid",
+              borderColor: project.liked ? "#ff6584" : "#d1d5db",
+              background: project.liked ? "rgba(255, 101, 132, 0.15)" : "white",
+              color: project.liked ? "#ff5070" : "#444",
+              transition: "all 0.2s ease",
+              "&:hover": {
+                background: project.liked
+                  ? "rgba(255, 101, 132, 0.25)"
+                  : "#f3f4f6",
+              },
+            }}
           >
-            {project.liked ? "❤️ Liked" : "🤍 Like"} {project.likes}
+            <span style={{ fontSize: "20px" }}>
+              {project.liked ? "❤️" : "🤍"}
+            </span>
+
+            <span style={{ fontWeight: 600 }}>
+              {project.likes}
+            </span>
           </Button>
+
         </CardContent>
       </Card>
 
