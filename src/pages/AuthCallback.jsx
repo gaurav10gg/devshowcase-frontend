@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
+import { Box, CircularProgress, Typography } from "@mui/material";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -13,13 +14,29 @@ export default function AuthCallback() {
         localStorage.setItem("token", data.session.access_token);
         navigate("/home", { replace: true });
       } else {
-        console.log("No session found yet, retrying…");
-        setTimeout(finishLogin, 200); // wait for Supabase to parse hash
+        setTimeout(finishLogin, 200); // keep retrying
       }
     };
 
     finishLogin();
   }, [navigate]);
 
-  return <div>Loading...</div>;
+  return (
+    <Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        bgcolor: "#e8f0fe", // 🔵 light blue background
+        gap: 2,
+      }}
+    >
+      <CircularProgress size={42} sx={{ color: "#2563eb" }} /> 
+      <Typography sx={{ fontSize: 18, color: "#2563eb", fontWeight: 600 }}>
+        Authenticating…
+      </Typography>
+    </Box>
+  );
 }
