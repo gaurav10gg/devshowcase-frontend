@@ -42,24 +42,37 @@ export default function ProjectPage() {
       console.log("Failed to load comments:", err);
     }
   }
+async function handleLike() {
+  if (!project) return;
 
-  async function handleLike() {
-    if (!project) return;
+  // ⭐ OPTIMISTIC UI UPDATE
+  const prev = { ...project };
 
-    try {
-      const result = project.liked
-        ? await unlikeProject(project.id)
-        : await likeProject(project.id);
+  const newState = {
+    ...project,
+    liked: !project.liked,
+    likes: project.liked ? project.likes - 1 : project.likes + 1,
+  };
 
-      setProject({
-        ...project,
-        likes: result.likes,
-        liked: result.liked,
-      });
-    } catch (err) {
-      console.log("Like failed:", err);
-    }
+  setProject(newState);
+
+  try {
+    const result = project.liked
+      ? await unlikeProject(project.id)
+      : await likeProject(project.id);
+
+    // ⭐ BACKEND CONFIRMS → update with real values
+    setProject({
+      ...project,
+      likes: result.likes,
+      liked: result.liked,
+    });
+  } catch (err) {
+    console.log("Like failed:", err);
+    // ❗ Revert if backend failed
+    setProject(prev);
   }
+}
 
   async function handleAddComment() {
     if (!commentText.trim()) return;
