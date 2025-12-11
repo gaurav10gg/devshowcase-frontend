@@ -7,24 +7,34 @@ export async function fetchProjects() {
 }
 
 export async function likeProject(id) {
+  const token = localStorage.getItem("token");
   const res = await axios.post(
-    `${API_URL}/projects/${id}/like`,
+    `${API_URL}/api/projects/${id}/like`,
     {},
-    { headers: getAuthHeaders() }
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
   );
   return res.data;
 }
+
 
 export async function fetchProjectById(id) {
   const res = await axios.get(`${API_URL}/projects/${id}`);
   return res.data;
 }
 
-
 export async function unlikeProject(id) {
+  const token = localStorage.getItem("token");
   const res = await axios.delete(
-    `${API_URL}/projects/${id}/like`,
-    { headers: getAuthHeaders() }
+    `${API_URL}/api/projects/${id}/like`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
   );
   return res.data;
 }
