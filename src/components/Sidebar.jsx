@@ -4,12 +4,12 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import InfoIcon from "@mui/icons-material/Info";
 import FolderIcon from "@mui/icons-material/Folder";
 import { Link, useLocation } from "react-router-dom";
-import { useThemeMode } from "../context/ThemeContext"; // ⭐ Add dark-mode hook
+import { useThemeMode } from "../context/ThemeContext";
 
-export default function Sidebar({ open }) {
+export default function Sidebar({ open, onClose }) {
   const WIDTH = open ? 200 : 64;
   const location = useLocation();
-  const { mode } = useThemeMode(); // ⭐ Detect dark/light mode
+  const { mode } = useThemeMode();
 
   const menu = [
     { text: "Home", to: "/home", icon: <HomeIcon /> },
@@ -19,137 +19,134 @@ export default function Sidebar({ open }) {
   ];
 
   return (
-    <Box
-      className="sidebar"
-      sx={{
-        width: WIDTH,
-        height: "100vh",
-
-        /* ⭐ LIGHT VS DARK BACKGROUND */
-        bgcolor: mode === "light" ? "#ffffff" : "#161b22",
-
-        /* ⭐ BORDER COLOR */
-        borderRight:
-          mode === "light"
-            ? "1px solid #e5e7eb"
-            : "1px solid #30363d",
-
-        transition: "width 0.25s ease",
-        overflow: "hidden",
-        py: 2,
-        display: "flex",
-        flexDirection: "column",
-        color: mode === "light" ? "#111" : "#f0f6fc"
-      }}
-    >
-      {/* SECTION TITLE */}
+    <>
+      {/* ⭐ Mobile overlay */}
       {open && (
-        <Typography
+        <Box
+          onClick={onClose}
           sx={{
-            fontSize: 12,
-            fontWeight: 600,
-            color: mode === "light" ? "#94a3b8" : "#8b949e",
-            px: 2,
-            mb: 1.5,
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            bgcolor: "rgba(0,0,0,0.4)",
+            backdropFilter: "blur(2px)",
+            display: { xs: "block", md: "none" },
+            zIndex: 8,
           }}
-        >
-          MENU
-        </Typography>
+        />
       )}
 
-      {/* MENU ITEMS */}
-      {menu.map((item) => {
-        const active = location.pathname === item.to;
+      <Box
+        sx={{
+          width: { xs: open ? 200 : 0, md: WIDTH },
+          height: "100vh",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          zIndex: 9,
 
-        return (
-          <Link
-            key={item.to}
-            to={item.to}
-            style={{ textDecoration: "none", color: "inherit" }}
+          bgcolor: mode === "light" ? "#ffffff" : "#161b22",
+          borderRight:
+            mode === "light"
+              ? "1px solid #e5e7eb"
+              : "1px solid #30363d",
+
+          overflow: "hidden",
+          transition: "all 0.25s ease",
+          py: 2,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {open && (
+          <Typography
+            sx={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: mode === "light" ? "#94a3b8" : "#8b949e",
+              px: 2,
+              mb: 1.5,
+              display: { xs: "block", md: "block" },
+            }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-                px: 2,
-                py: 1.5,
-                cursor: "pointer",
+            MENU
+          </Typography>
+        )}
 
-                /* ⭐ ACTIVE ITEM COLORS */
-                bgcolor: active
-                  ? mode === "light"
-                    ? "#f1f5f9"
-                    : "#1b1f24"
-                  : "transparent",
-                borderRight: active
-                  ? mode === "light"
-                    ? "3px solid #2563eb"
-                    : "3px solid #238636" // GitHub green
-                  : "3px solid transparent",
+        {menu.map((item) => {
+          const active = location.pathname === item.to;
 
-                /* ⭐ HOVER EFFECT */
-                "&:hover": {
-                  bgcolor:
-                    mode === "light" ? "#f8fafc" : "#1f2933",
-                },
-
-                transition: "all 0.2s ease",
-                color: mode === "light" ? "#111" : "#f0f6fc",
-              }}
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              onClick={() => onClose?.()}
+              style={{ textDecoration: "none", color: "inherit" }}
             >
-              {/* ICON */}
               <Box
                 sx={{
-                  color: active
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  px: 2,
+                  py: 1.5,
+                  cursor: "pointer",
+
+                  bgcolor: active
                     ? mode === "light"
-                      ? "#2563eb"
-                      : "#238636"
-                    : mode === "light"
-                      ? "#64748b"
-                      : "#8b949e",
+                      ? "#f1f5f9"
+                      : "#1b1f24"
+                    : "transparent",
+
+                  "&:hover": {
+                    bgcolor:
+                      mode === "light" ? "#f8fafc" : "#1f2933",
+                  },
+
+                  borderRight: active
+                    ? mode === "light"
+                      ? "3px solid #2563eb"
+                      : "3px solid #238636"
+                    : "3px solid transparent",
+
+                  transition: "all 0.2s ease",
                 }}
               >
-                {item.icon}
-              </Box>
-
-              {open && (
-                <Typography
+                <Box
                   sx={{
-                    fontSize: 14,
-                    fontWeight: active ? 600 : 500,
                     color: active
                       ? mode === "light"
-                        ? "#111"
-                        : "#f0f6fc"
+                        ? "#2563eb"
+                        : "#238636"
                       : mode === "light"
-                        ? "#111"
-                        : "#c9d1d9",
+                      ? "#64748b"
+                      : "#8b949e",
                   }}
                 >
-                  {item.text}
-                </Typography>
-              )}
-            </Box>
-          </Link>
-        );
-      })}
+                  {item.icon}
+                </Box>
 
-      <Box sx={{ flexGrow: 1 }} />
-
-      {/* FOOTER */}
-      {open && (
-        <Typography
-          sx={{
-            fontSize: 12,
-            textAlign: "center",
-            mb: 2,
-            color: mode === "light" ? "#cbd5e1" : "#8b949e",
-          }}
-        >
-          Dev Showcase © 2025
-        </Typography>
-      )}
-    </Box>
+                {open && (
+                  <Typography
+                    sx={{
+                      fontSize: 14,
+                      fontWeight: active ? 600 : 500,
+                      color:
+                        mode === "light"
+                          ? "#111"
+                          : "#c9d1d9",
+                    }}
+                  >
+                    {item.text}
+                  </Typography>
+                )}
+              </Box>
+            </Link>
+          );
+        })}
+      </Box>
+    </>
   );
 }

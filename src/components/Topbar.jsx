@@ -16,9 +16,8 @@ export default function Topbar({ sidebarOpen, onToggleSidebar }) {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  const { mode, toggleTheme } = useThemeMode(); // ⭐ Dark Mode Hook
+  const { mode, toggleTheme } = useThemeMode();
 
-  // Fetch user
   const { data: user } = useQuery({
     queryKey: ["me"],
     queryFn: async () => {
@@ -37,7 +36,6 @@ export default function Topbar({ sidebarOpen, onToggleSidebar }) {
 
   return (
     <Box
-      className="topbar"
       sx={{
         height: 64,
         px: 2,
@@ -46,87 +44,78 @@ export default function Topbar({ sidebarOpen, onToggleSidebar }) {
         justifyContent: "space-between",
         position: "fixed",
         top: 0,
-        left: sidebarOpen ? 200 : 64,
+        left: { xs: 0, md: sidebarOpen ? 200 : 64 },
         right: 0,
         transition: "left 0.25s ease",
         zIndex: 10,
 
-        /* ⭐ LIGHT MODE COLORS */
         bgcolor: mode === "light" ? "#ffffff" : "#161b22",
-        borderBottom: mode === "light"
-          ? "1px solid #e5e7eb"
-          : "1px solid #30363d",
-        color: mode === "light" ? "#111" : "#f0f6fc"
+        borderBottom:
+          mode === "light"
+            ? "1px solid #e5e7eb"
+            : "1px solid #30363d",
+        color: mode === "light" ? "#111" : "#f0f6fc",
       }}
     >
-      {/* Left side */}
+      {/* LEFT SIDE */}
       <Box sx={{ display: "flex", alignItems: "center" }}>
         <IconButton
           onClick={onToggleSidebar}
-          sx={{
-            color: mode === "light" ? "#111" : "#f0f6fc"
-          }}
+          sx={{ color: mode === "light" ? "#111" : "#f0f6fc" }}
         >
           <MenuIcon />
         </IconButton>
 
         <Typography
           sx={{
-            fontWeight: 600,
             ml: 2,
-            color: mode === "light" ? "#111" : "#f0f6fc"
+            fontWeight: 600,
+            fontSize: { xs: 18, md: 20 },
           }}
         >
           Dev Showcase
         </Typography>
       </Box>
 
-      {/* Right Side */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-
-        {/* ⭐ DARK MODE TOGGLE BUTTON */}
+      {/* RIGHT SIDE */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: { xs: 1, md: 2 },
+        }}
+      >
         <IconButton
           onClick={toggleTheme}
-          sx={{
-            color: mode === "light" ? "#111" : "#f0f6fc"
-          }}
+          sx={{ color: mode === "light" ? "#111" : "#f0f6fc" }}
         >
           {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
         </IconButton>
 
-        {/* Avatar */}
         <Avatar
           src={user?.avatar || null}
           sx={{
-            width: 34,
-            height: 34,
+            width: 32,
+            height: 32,
             bgcolor: mode === "light" ? "#e5e7eb" : "#30363d",
-            color: mode === "light" ? "#111" : "#f0f6fc"
           }}
         >
           {!user?.avatar && user?.name ? user.name[0] : "U"}
         </Avatar>
 
-        {/* Logout button */}
+        {/* On mobile, hide text "Logout" */}
         <Button
-          variant="outlined"
           size="small"
+          variant="outlined"
           onClick={handleLogout}
           startIcon={<LogoutIcon />}
           sx={{
-            textTransform: "none",
+            display: { xs: "none", md: "flex" },
             borderRadius: "8px",
             fontWeight: 600,
-
-            /* Light mode */
             borderColor: mode === "light" ? "#d1d5db" : "#30363d",
             color: mode === "light" ? "#111" : "#f0f6fc",
             background: mode === "light" ? "#fff" : "#21262d",
-
-            "&:hover": {
-              borderColor: mode === "light" ? "#111" : "#8b949e",
-              background: mode === "light" ? "#f9fafb" : "#30363d",
-            }
           }}
         >
           Logout

@@ -18,12 +18,21 @@ export default function AppLayout() {
         display: "flex",
         height: "100vh",
         overflow: "hidden",
-        bgcolor: theme.palette.background.default, // 🌙 main site background now theme-based
+        bgcolor: theme.palette.background.default,
         color: mode === "dark" ? "#e5e5e5" : "#111",
       }}
     >
       {/* Sidebar */}
-      <Sidebar open={sidebarOpen} />
+      <Sidebar
+        open={sidebarOpen}
+        sx={{
+          // ⭐ MOBILE FIX: hide sidebar by default on small screens
+          display: {
+            xs: sidebarOpen ? "block" : "none",
+            sm: "block",
+          },
+        }}
+      />
 
       {/* Main area */}
       <Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
@@ -39,9 +48,9 @@ export default function AppLayout() {
           sx={{
             flexGrow: 1,
             overflowY: "auto",
-            bgcolor: theme.palette.background.default, // 🌙 page background also theme-based
-            p: 3,
-            mt: "64px", // height of topbar
+            bgcolor: theme.palette.background.default,
+            p: { xs: 1.5, sm: 3 }, // ⭐ MOBILE PADDING FIX
+            mt: "64px",
           }}
         >
           <Outlet />
