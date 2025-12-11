@@ -9,7 +9,7 @@ export async function fetchProjects() {
 export async function likeProject(id) {
   const token = localStorage.getItem("token");
   const res = await axios.post(
-    `${API_URL}/api/projects/${id}/like`,
+    `${API_URL}/projects/${id}/like`,
     {},
     {
       headers: {
@@ -29,7 +29,7 @@ export async function fetchProjectById(id) {
 export async function unlikeProject(id) {
   const token = localStorage.getItem("token");
   const res = await axios.delete(
-    `${API_URL}/api/projects/${id}/like`,
+    `${API_URL}/projects/${id}/like`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
