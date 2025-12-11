@@ -12,6 +12,8 @@ export default function AppLayout() {
   const theme = useTheme();
   const { mode } = useThemeMode();
 
+  const SIDEBAR_WIDTH = sidebarOpen ? 200 : 64;
+
   return (
     <Box
       sx={{
@@ -25,19 +27,12 @@ export default function AppLayout() {
       {/* Sidebar */}
       <Sidebar
         open={sidebarOpen}
-        sx={{
-          // ⭐ MOBILE FIX: hide sidebar by default on small screens
-          display: {
-            xs: sidebarOpen ? "block" : "none",
-            sm: "block",
-          },
-        }}
+        onClose={() => setSidebarOpen(false)}
       />
 
-      {/* Main area */}
-      <Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
+      {/* Main */}
+      <Box sx={{ flexGrow: 1, ml: { xs: 0, md: `${SIDEBAR_WIDTH}px` } }}>
         
-        {/* Topbar */}
         <Topbar
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
@@ -49,7 +44,7 @@ export default function AppLayout() {
             flexGrow: 1,
             overflowY: "auto",
             bgcolor: theme.palette.background.default,
-            p: { xs: 1.5, sm: 3 }, // ⭐ MOBILE PADDING FIX
+            p: { xs: 1.5, sm: 3 },
             mt: "64px",
           }}
         >
