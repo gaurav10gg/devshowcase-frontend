@@ -9,6 +9,7 @@ import {
   CardContent,
   CardMedia,
   CircularProgress,
+  Chip,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useQuery } from "@tanstack/react-query";
@@ -43,92 +44,51 @@ export default function MyProjects() {
   });
 
   // ------------------------
-  // CREATE / UPDATE project
+  // SAVE PROJECT
   // ------------------------
- // Replace your existing saveProject / createProject with this function
-const saveProject = async () => {
-  const token = localStorage.getItem("token");
+  const saveProject = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please log in again.");
+      return;
+    }
 
-  // Quick token check: mobile browsers sometimes don't persist the token
-  if (!token) {
-    // friendly message for mobile users
-    alert("You are not logged in. Please log in and try again.");
-    // Optionally redirect to login:
-    // navigate('/');
-    return;
-  }
+    const payload = {
+      ...form,
+      tags: (form.tags || "")
+        .split(",")
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0),
+    };
 
-  const payload = {
-    ...form,
-    tags: (form.tags || "")
-      .toString()
-      .split(",")
-      .map((t) => t.trim())
-      .filter((t) => t.length > 0),
+    try {
+      if (editingId) {
+        await axios.patch(`${API_URL}/api/projects/${editingId}`, payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        await axios.post(`${API_URL}/api/projects`, payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+
+      setOpen(false);
+      setEditingId(null);
+      setForm({
+        title: "",
+        short_desc: "",
+        full_desc: "",
+        image: "",
+        github: "",
+        live: "",
+        tags: "",
+      });
+      refetch();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save project");
+    }
   };
-
-  try {
-    if (editingId) {
-      // UPDATE
-      const res = await axios.patch(`${API_URL}/api/projects/${editingId}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("Update response:", res.data);
-    } else {
-      // CREATE
-      const res = await axios.post(`${API_URL}/api/projects`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("Create response:", res.data);
-    }
-
-    setOpen(false);
-    setEditingId(null);
-    setForm({
-      title: "",
-      short_desc: "",
-      full_desc: "",
-      image: "",
-      github: "",
-      live: "",
-      tags: "",
-    });
-    refetch();
-  } catch (err) {
-    // Log everything useful for debugging
-    console.error("Save project error (full):", err);
-
-    // Axios error parsing
-    const status = err?.response?.status;
-    const serverMsg = err?.response?.data?.message || err?.response?.data || err?.message;
-
-    // Show helpful messages to user (mobile-friendly)
-    if (status === 401) {
-      alert("Not authenticated. Please sign in and try again.");
-      // optionally force logout/redirect:
-      // localStorage.removeItem('token'); navigate('/');
-      return;
-    }
-
-    // For 400/422 show server message if present
-    if (status === 400 || status === 422) {
-      alert(serverMsg || "Invalid input. Please check your project fields.");
-      return;
-    }
-
-    // Generic fallback
-    alert(
-      serverMsg
-        ? `Failed: ${serverMsg}`
-        : "Failed to save project. Check console/network for details."
-    );
-
-    // Helpful dev-only console details:
-    console.log("HTTP status:", status);
-    console.log("Server response body:", err?.response?.data);
-  }
-};
-
 
   // ------------------------
   // DELETE PROJECT
@@ -141,10 +101,9 @@ const saveProject = async () => {
       await axios.delete(`${API_URL}/api/projects/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       refetch();
     } catch (err) {
-      console.error("Delete error:", err);
+      console.error(err);
       alert("Delete failed");
     }
   };
@@ -166,6 +125,7 @@ const saveProject = async () => {
     setOpen(true);
   };
 
+  // IMAGE UPLOAD
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -186,10 +146,14 @@ const saveProject = async () => {
 
   return (
     <Box p={3}>
+      {/* HEADER */}
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Typography variant="h4">My Projects</Typography>
+        <Typography variant="h4" fontWeight={700}>
+          My Projects
+        </Typography>
         <Button
           variant="contained"
+          size="large"
           onClick={() => {
             setEditingId(null);
             setForm({
@@ -204,46 +168,74 @@ const saveProject = async () => {
             setOpen(true);
           }}
         >
-          New Project
+          + New Project
         </Button>
       </Box>
 
+      {/* LOADING */}
       {isLoading ? (
-        <CircularProgress />
+        <Box display="flex" justifyContent="center" mt={4}>
+          <CircularProgress />
+        </Box>
       ) : (
-        <Stack spacing={2} mt={3}>
+        <Stack spacing={3} mt={4}>
           {data?.map((project) => (
             <Card
               key={project.id}
               sx={{
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: "center",
-                bgcolor: theme.palette.background.paper,
-                color: theme.palette.text.primary,
+                alignItems: "stretch",
                 p: 2,
+                borderRadius: 3,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
               }}
             >
-              <Box sx={{ display: "flex" }}>
+              {/* LEFT CONTENT */}
+              <Box sx={{ display: "flex", gap: 2 }}>
                 <CardMedia
                   component="img"
-                  image={project.image}
+                  src={project.image}
                   alt={project.title}
-                  sx={{ width: 160, height: 160, objectFit: "cover" }}
+                  sx={{
+                    width: 150,
+                    height: 150,
+                    borderRadius: 2,
+                    objectFit: "cover",
+                  }}
                 />
-                <CardContent>
-                  <Typography variant="h6">{project.title}</Typography>
-                  <Typography variant="body2" color="text.secondary">
+                <CardContent sx={{ p: 0 }}>
+                  <Typography variant="h6" fontWeight={700}>
+                    {project.title}
+                  </Typography>
+
+                  <Typography
+                    variant="body2"
+                    sx={{ opacity: 0.8, mt: 0.5, mb: 1 }}
+                  >
                     {project.short_desc}
                   </Typography>
+
+                  {/* TAGS */}
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {project.tags?.map((tag, i) => (
+                      <Chip
+                        label={tag}
+                        key={i}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    ))}
+                  </Stack>
                 </CardContent>
               </Box>
 
-              <Stack spacing={1} direction="row">
+              {/* BUTTONS */}
+              <Stack spacing={1} direction="row" alignSelf="center">
                 <Button variant="outlined" onClick={() => startEdit(project)}>
                   Edit
                 </Button>
-
                 <Button
                   variant="contained"
                   color="error"
@@ -257,17 +249,16 @@ const saveProject = async () => {
         </Stack>
       )}
 
-      {/* ⭐ FIXED MODAL (ONLY THIS PART CHANGED) */}
+      {/* MODAL */}
       <Modal open={open} onClose={() => setOpen(false)}>
-       <Box
+        <Box
           sx={{
-            width: { xs: "90vw", sm: 500 },   // ⭐ MOBILE FIX
-            maxHeight: "90vh",               // ⭐ prevent overflow
-            overflowY: "auto",               // ⭐ scroll inside modal
+            width: { xs: "90vw", sm: 500 },
+            maxHeight: "90vh",
+            overflowY: "auto",
             p: 4,
             bgcolor: theme.palette.background.paper,
-            color: theme.palette.text.primary,
-            borderRadius: 2,
+            borderRadius: 3,
             boxShadow: 24,
             position: "absolute",
             top: "50%",
@@ -275,8 +266,7 @@ const saveProject = async () => {
             transform: "translate(-50%, -50%)",
           }}
         >
-
-          <Typography variant="h5" mb={2}>
+          <Typography variant="h5" fontWeight={700} mb={2}>
             {editingId ? "Edit Project" : "Create New Project"}
           </Typography>
 
@@ -290,18 +280,18 @@ const saveProject = async () => {
 
             <Button variant="outlined" component="label">
               Upload Image
-              <input hidden type="file" accept="image/*" onChange={handleImageUpload} />
+              <input hidden accept="image/*" type="file" onChange={handleImageUpload} />
             </Button>
 
             {form.image && (
               <img
                 src={form.image}
-                alt="Preview"
+                alt="preview"
                 style={{
                   width: "100%",
                   height: "200px",
-                  objectFit: "cover",
                   borderRadius: "10px",
+                  objectFit: "cover",
                 }}
               />
             )}
@@ -340,12 +330,11 @@ const saveProject = async () => {
               label="Tags (comma separated)"
               value={form.tags}
               onChange={(e) => setForm({ ...form, tags: e.target.value })}
-              helperText="Example: ai, fullstack, webapp"
               fullWidth
             />
 
-            <Button variant="contained" onClick={saveProject}>
-              {editingId ? "Save Changes" : "Create"}
+            <Button variant="contained" size="large" onClick={saveProject}>
+              {editingId ? "Save Changes" : "Create Project"}
             </Button>
           </Stack>
         </Box>
