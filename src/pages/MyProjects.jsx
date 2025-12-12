@@ -10,15 +10,16 @@ import {
   CardMedia,
   CircularProgress,
 } from "@mui/material";
-import { useTheme } from "@mui/material/styles";   // ⭐ REQUIRED FOR DARK MODE
+import { useTheme } from "@mui/material/styles";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useState } from "react";
 import { API_URL } from "../config";
 
 export default function MyProjects() {
-  const theme = useTheme(); // ⭐ MUI theme (light/dark)
+  const theme = useTheme();
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const [form, setForm] = useState({
     title: "",
@@ -41,26 +42,36 @@ export default function MyProjects() {
     },
   });
 
-  const createProject = async () => {
+  // ------------------------
+  // CREATE / UPDATE project
+  // ------------------------
+  const saveProject = async () => {
     const token = localStorage.getItem("token");
+    const payload = {
+      ...form,
+      tags: form.tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0),
+    };
 
     try {
-      const res = await axios.post(
-        `${API_URL}/api/projects`,
-        {
-          ...form,
-          tags: form.tags
-            .split(",")
-            .map((t) => t.trim())
-            .filter((t) => t.length > 0),
-        },
-        {
+      if (editingId) {
+        // UPDATE
+        await axios.patch(`${API_URL}/api/projects/${editingId}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+        });
+      } else {
+        // CREATE
+        await axios.post(`${API_URL}/api/projects`, payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
 
       setOpen(false);
-      refetch();
+      setEditingId(null);
+
+      // reset form
       setForm({
         title: "",
         short_desc: "",
@@ -70,10 +81,48 @@ export default function MyProjects() {
         live: "",
         tags: "",
       });
+
+      refetch();
     } catch (err) {
-      console.error("Error creating project:", err);
-      alert("Failed to create project");
+      console.error("Save project error:", err);
+      alert("Failed to save project");
     }
+  };
+
+  // ------------------------
+  // DELETE PROJECT
+  // ------------------------
+  const deleteProject = async (id) => {
+    if (!confirm("Delete this project?")) return;
+
+    const token = localStorage.getItem("token");
+    try {
+      await axios.delete(`${API_URL}/api/projects/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      refetch();
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("Delete failed");
+    }
+  };
+
+  // ------------------------
+  // EDIT PROJECT - open modal & fill form
+  // ------------------------
+  const startEdit = (project) => {
+    setEditingId(project.id);
+    setForm({
+      title: project.title,
+      short_desc: project.short_desc,
+      full_desc: project.full_desc,
+      image: project.image,
+      github: project.github,
+      live: project.live,
+      tags: project.tags?.join(", ") || "",
+    });
+    setOpen(true);
   };
 
   const handleImageUpload = async (e) => {
@@ -98,7 +147,22 @@ export default function MyProjects() {
     <Box p={3}>
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Typography variant="h4">My Projects</Typography>
-        <Button variant="contained" onClick={() => setOpen(true)}>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setEditingId(null);
+            setForm({
+              title: "",
+              short_desc: "",
+              full_desc: "",
+              image: "",
+              github: "",
+              live: "",
+              tags: "",
+            });
+            setOpen(true);
+          }}
+        >
           New Project
         </Button>
       </Box>
@@ -112,22 +176,46 @@ export default function MyProjects() {
               key={project.id}
               sx={{
                 display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
                 bgcolor: theme.palette.background.paper,
                 color: theme.palette.text.primary,
+                p: 2,
               }}
             >
-              <CardMedia
-                component="img"
-                image={project.image}
-                alt={project.title}
-                sx={{ width: 160, height: 160, objectFit: "cover" }}
-              />
-              <CardContent>
-                <Typography variant="h6">{project.title}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {project.short_desc}
-                </Typography>
-              </CardContent>
+              {/* Left side */}
+              <Box sx={{ display: "flex" }}>
+                <CardMedia
+                  component="img"
+                  image={project.image}
+                  alt={project.title}
+                  sx={{ width: 160, height: 160, objectFit: "cover" }}
+                />
+                <CardContent>
+                  <Typography variant="h6">{project.title}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {project.short_desc}
+                  </Typography>
+                </CardContent>
+              </Box>
+
+              {/* Right: edit + delete buttons */}
+              <Stack spacing={1} direction="row">
+                <Button
+                  variant="outlined"
+                  onClick={() => startEdit(project)}
+                >
+                  Edit
+                </Button>
+
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => deleteProject(project.id)}
+                >
+                  Delete
+                </Button>
+              </Stack>
             </Card>
           ))}
         </Stack>
@@ -139,8 +227,8 @@ export default function MyProjects() {
           sx={{
             width: 500,
             p: 4,
-            bgcolor: theme.palette.background.paper, // ⭐ DARK MODE FIX
-            color: theme.palette.text.primary, // ⭐ DARK MODE FIX
+            bgcolor: theme.palette.background.paper,
+            color: theme.palette.text.primary,
             borderRadius: 2,
             boxShadow: 24,
             position: "absolute",
@@ -150,7 +238,7 @@ export default function MyProjects() {
           }}
         >
           <Typography variant="h5" mb={2}>
-            Create New Project
+            {editingId ? "Edit Project" : "Create New Project"}
           </Typography>
 
           <Stack spacing={2}>
@@ -159,7 +247,6 @@ export default function MyProjects() {
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               fullWidth
-              InputLabelProps={{ style: { color: theme.palette.text.primary } }}
             />
 
             <Button variant="outlined" component="label">
@@ -218,12 +305,12 @@ export default function MyProjects() {
               label="Tags (comma separated)"
               value={form.tags}
               onChange={(e) => setForm({ ...form, tags: e.target.value })}
-              helperText="Example: ai, blockchain, webapp"
+              helperText="Example: ai, fullstack, webapp"
               fullWidth
             />
 
-            <Button variant="contained" onClick={createProject}>
-              Create
+            <Button variant="contained" onClick={saveProject}>
+              {editingId ? "Save Changes" : "Create"}
             </Button>
           </Stack>
         </Box>
