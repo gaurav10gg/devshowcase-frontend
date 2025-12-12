@@ -1,8 +1,9 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import SettingsIcon from "@mui/icons-material/Settings";
 import InfoIcon from "@mui/icons-material/Info";
 import FolderIcon from "@mui/icons-material/Folder";
+import LogoutIcon from "@mui/icons-material/Logout"; // ⭐ added
 import { Link, useLocation } from "react-router-dom";
 import { useThemeMode } from "../context/ThemeContext";
 
@@ -18,9 +19,14 @@ export default function Sidebar({ open, onClose }) {
     { text: "About", to: "/about", icon: <InfoIcon /> },
   ];
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/";
+  };
+
   return (
     <>
-      {/* ⭐ Mobile dark overlay */}
+      {/* ⭐ Mobile overlay */}
       {open && (
         <Box
           onClick={onClose}
@@ -31,7 +37,6 @@ export default function Sidebar({ open, onClose }) {
             right: 0,
             bottom: 0,
             bgcolor: "rgba(0,0,0,0.4)",
-            backdropFilter: "blur(2px)",
             display: { xs: "block", md: "none" },
             zIndex: 8,
           }}
@@ -46,21 +51,14 @@ export default function Sidebar({ open, onClose }) {
           top: 0,
           left: 0,
           zIndex: 9,
-
           bgcolor: mode === "light" ? "#ffffff" : "#161b22",
           borderRight:
-            mode === "light"
-              ? "1px solid #e5e7eb"
-              : "1px solid #30363d",
-
+            mode === "light" ? "1px solid #e5e7eb" : "1px solid #30363d",
           overflow: "hidden",
           transition: "all 0.25s ease",
-          py: 2,
           display: "flex",
           flexDirection: "column",
-
-          // ⭐ PUSH CONTENT DOWN ONLY ON MOBILE (fixes Home icon overlap)
-          pt: { xs: "72px", md: "16px" }, 
+          pt: { xs: "72px", md: "16px" },
         }}
       >
         {/* MENU LABEL */}
@@ -72,7 +70,6 @@ export default function Sidebar({ open, onClose }) {
               color: mode === "light" ? "#94a3b8" : "#8b949e",
               px: 2,
               mb: 1.5,
-              display: { xs: "block", md: "block" },
             }}
           >
             MENU
@@ -98,25 +95,19 @@ export default function Sidebar({ open, onClose }) {
                   px: 2,
                   py: 1.5,
                   cursor: "pointer",
-
                   bgcolor: active
                     ? mode === "light"
                       ? "#f1f5f9"
                       : "#1b1f24"
                     : "transparent",
-
                   "&:hover": {
-                    bgcolor:
-                      mode === "light" ? "#f8fafc" : "#1f2933",
+                    bgcolor: mode === "light" ? "#f8fafc" : "#1f2933",
                   },
-
                   borderRight: active
                     ? mode === "light"
                       ? "3px solid #2563eb"
                       : "3px solid #238636"
                     : "3px solid transparent",
-
-                  transition: "all 0.2s ease",
                 }}
               >
                 <Box
@@ -138,10 +129,7 @@ export default function Sidebar({ open, onClose }) {
                     sx={{
                       fontSize: 14,
                       fontWeight: active ? 600 : 500,
-                      color:
-                        mode === "light"
-                          ? "#111"
-                          : "#c9d1d9",
+                      color: mode === "light" ? "#111" : "#c9d1d9",
                     }}
                   >
                     {item.text}
@@ -151,6 +139,35 @@ export default function Sidebar({ open, onClose }) {
             </Link>
           );
         })}
+
+        {/* ⭐ MOBILE LOGOUT BUTTON — only visible on XS */}
+        {open && (
+          <Box
+            sx={{
+              mt: "auto",
+              px: 2,
+              pb: 3,
+              display: { xs: "flex", md: "none" },
+            }}
+          >
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<LogoutIcon />}
+              onClick={handleLogout}
+              sx={{
+                color: mode === "light" ? "#ef4444" : "#f87171",
+                borderColor: mode === "light" ? "#ef4444" : "#f87171",
+                "&:hover": {
+                  borderColor: "#dc2626",
+                  background: mode === "light" ? "#fee2e2" : "#2d1b1b",
+                },
+              }}
+            >
+              Logout
+            </Button>
+          </Box>
+        )}
       </Box>
     </>
   );
