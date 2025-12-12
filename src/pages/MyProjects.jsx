@@ -57,12 +57,10 @@ export default function MyProjects() {
 
     try {
       if (editingId) {
-        // UPDATE
         await axios.patch(`${API_URL}/api/projects/${editingId}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        // CREATE
         await axios.post(`${API_URL}/api/projects`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -71,7 +69,6 @@ export default function MyProjects() {
       setOpen(false);
       setEditingId(null);
 
-      // reset form
       setForm({
         title: "",
         short_desc: "",
@@ -109,7 +106,7 @@ export default function MyProjects() {
   };
 
   // ------------------------
-  // EDIT PROJECT - open modal & fill form
+  // EDIT PROJECT
   // ------------------------
   const startEdit = (project) => {
     setEditingId(project.id);
@@ -183,7 +180,6 @@ export default function MyProjects() {
                 p: 2,
               }}
             >
-              {/* Left side */}
               <Box sx={{ display: "flex" }}>
                 <CardMedia
                   component="img"
@@ -199,12 +195,8 @@ export default function MyProjects() {
                 </CardContent>
               </Box>
 
-              {/* Right: edit + delete buttons */}
               <Stack spacing={1} direction="row">
-                <Button
-                  variant="outlined"
-                  onClick={() => startEdit(project)}
-                >
+                <Button variant="outlined" onClick={() => startEdit(project)}>
                   Edit
                 </Button>
 
@@ -221,11 +213,13 @@ export default function MyProjects() {
         </Stack>
       )}
 
-      {/* MODAL */}
+      {/* ⭐ FIXED MODAL (ONLY THIS PART CHANGED) */}
       <Modal open={open} onClose={() => setOpen(false)}>
         <Box
           sx={{
-            width: 500,
+            width: { xs: "90%", sm: 500 },
+            maxHeight: "90vh",          // ⭐ prevents overflow
+            overflowY: "auto",          // ⭐ scroll inside modal
             p: 4,
             bgcolor: theme.palette.background.paper,
             color: theme.palette.text.primary,
@@ -270,9 +264,7 @@ export default function MyProjects() {
             <TextField
               label="Short Description"
               value={form.short_desc}
-              onChange={(e) =>
-                setForm({ ...form, short_desc: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, short_desc: e.target.value })}
               fullWidth
             />
 
@@ -281,9 +273,7 @@ export default function MyProjects() {
               multiline
               rows={3}
               value={form.full_desc}
-              onChange={(e) =>
-                setForm({ ...form, full_desc: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, full_desc: e.target.value })}
               fullWidth
             />
 
