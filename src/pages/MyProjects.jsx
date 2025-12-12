@@ -215,11 +215,11 @@ export default function MyProjects() {
 
       {/* ⭐ FIXED MODAL (ONLY THIS PART CHANGED) */}
       <Modal open={open} onClose={() => setOpen(false)}>
-        <Box
+       <Box
           sx={{
-            width: { xs: "90%", sm: 500 },
-            maxHeight: "90vh",          // ⭐ prevents overflow
-            overflowY: "auto",          // ⭐ scroll inside modal
+            width: { xs: "90vw", sm: 500 },   // ⭐ MOBILE FIX
+            maxHeight: "90vh",               // ⭐ prevent overflow
+            overflowY: "auto",               // ⭐ scroll inside modal
             p: 4,
             bgcolor: theme.palette.background.paper,
             color: theme.palette.text.primary,
@@ -231,6 +231,7 @@ export default function MyProjects() {
             transform: "translate(-50%, -50%)",
           }}
         >
+
           <Typography variant="h5" mb={2}>
             {editingId ? "Edit Project" : "Create New Project"}
           </Typography>
