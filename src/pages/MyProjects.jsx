@@ -45,46 +45,90 @@ export default function MyProjects() {
   // ------------------------
   // CREATE / UPDATE project
   // ------------------------
-  const saveProject = async () => {
-    const token = localStorage.getItem("token");
-    const payload = {
-      ...form,
-      tags: form.tags
-        .split(",")
-        .map((t) => t.trim())
-        .filter((t) => t.length > 0),
-    };
+ // Replace your existing saveProject / createProject with this function
+const saveProject = async () => {
+  const token = localStorage.getItem("token");
 
-    try {
-      if (editingId) {
-        await axios.patch(`${API_URL}/api/projects/${editingId}`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      } else {
-        await axios.post(`${API_URL}/api/projects`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      }
+  // Quick token check: mobile browsers sometimes don't persist the token
+  if (!token) {
+    // friendly message for mobile users
+    alert("You are not logged in. Please log in and try again.");
+    // Optionally redirect to login:
+    // navigate('/');
+    return;
+  }
 
-      setOpen(false);
-      setEditingId(null);
-
-      setForm({
-        title: "",
-        short_desc: "",
-        full_desc: "",
-        image: "",
-        github: "",
-        live: "",
-        tags: "",
-      });
-
-      refetch();
-    } catch (err) {
-      console.error("Save project error:", err);
-      alert("Failed to save project");
-    }
+  const payload = {
+    ...form,
+    tags: (form.tags || "")
+      .toString()
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0),
   };
+
+  try {
+    if (editingId) {
+      // UPDATE
+      const res = await axios.patch(`${API_URL}/api/projects/${editingId}`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Update response:", res.data);
+    } else {
+      // CREATE
+      const res = await axios.post(`${API_URL}/api/projects`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Create response:", res.data);
+    }
+
+    setOpen(false);
+    setEditingId(null);
+    setForm({
+      title: "",
+      short_desc: "",
+      full_desc: "",
+      image: "",
+      github: "",
+      live: "",
+      tags: "",
+    });
+    refetch();
+  } catch (err) {
+    // Log everything useful for debugging
+    console.error("Save project error (full):", err);
+
+    // Axios error parsing
+    const status = err?.response?.status;
+    const serverMsg = err?.response?.data?.message || err?.response?.data || err?.message;
+
+    // Show helpful messages to user (mobile-friendly)
+    if (status === 401) {
+      alert("Not authenticated. Please sign in and try again.");
+      // optionally force logout/redirect:
+      // localStorage.removeItem('token'); navigate('/');
+      return;
+    }
+
+    // For 400/422 show server message if present
+    if (status === 400 || status === 422) {
+      alert(serverMsg || "Invalid input. Please check your project fields.");
+      return;
+    }
+
+    // Generic fallback
+    alert(
+      serverMsg
+        ? `Failed: ${serverMsg}`
+        : "Failed to save project. Check console/network for details."
+    );
+
+    // Helpful dev-only console details:
+    console.log("HTTP status:", status);
+    console.log("Server response body:", err?.response?.data);
+  }
+};
+
 
   // ------------------------
   // DELETE PROJECT
