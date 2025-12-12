@@ -185,15 +185,6 @@ export default function Home() {
             borderColor: mode === "dark" ? "#4b5563" : "inherit",
           }}
         />
-        <Chip
-          label="AI Tools"
-          variant="outlined"
-          sx={{
-            borderRadius: 999,
-            color: mode === "dark" ? "#e5e5e5" : "inherit",
-            borderColor: mode === "dark" ? "#4b5563" : "inherit",
-          }}
-        />
       </Stack>
 
       {/* -------- FEED AREA -------- */}
