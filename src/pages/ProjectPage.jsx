@@ -78,11 +78,17 @@ async function handleLike() {
     if (!commentText.trim()) return;
 
     try {
-      const res = await axios.post(
-        `${API_URL}/api/comments/${id}`,
-        { text: commentText },
-        { headers: getAuthHeaders() }
-      );
+      const token = localStorage.getItem("token");
+
+        await axios.post(
+          `${API_URL}/comments/${projectId}`,
+          { text },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
       setComments([...comments, res.data]);
       setCommentText("");
