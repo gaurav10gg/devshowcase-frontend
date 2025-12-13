@@ -72,30 +72,29 @@ async function handleLike() {
     setProject(prev); // revert
   }
 }
+async function handleAddComment() {
+  if (!commentText.trim()) return;
 
+  try {
+    const token = localStorage.getItem("access_token");
 
-  async function handleAddComment() {
-    if (!commentText.trim()) return;
+    const res = await axios.post(
+      `${API_URL}/comments/${id}`,
+      { text: commentText }, // ✅ FIXED
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ correct token key
+        },
+      }
+    );
 
-    try {
-      const token = localStorage.getItem("token");
-
-        await axios.post(
-          `${API_URL}/comments/${id}`,
-          { text },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-      setComments([...comments, res.data]);
-      setCommentText("");
-    } catch (err) {
-      console.log("Failed to add comment:", err);
-    }
+    // append new comment instantly
+    setComments((prev) => [...prev, res.data]);
+    setCommentText("");
+  } catch (err) {
+    console.log("Failed to add comment:", err);
   }
+}
 
   useEffect(() => {
     async function init() {
