@@ -81,7 +81,7 @@ async function handleLike() {
       const token = localStorage.getItem("token");
 
         await axios.post(
-          `${API_URL}/comments/${projectId}`,
+          `${API_URL}/comments/${id}`,
           { text },
           {
             headers: {
