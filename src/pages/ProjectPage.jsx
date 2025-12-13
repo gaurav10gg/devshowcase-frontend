@@ -79,7 +79,7 @@ async function handleAddComment() {
     const token = localStorage.getItem("access_token");
 
     const res = await axios.post(
-      `${API_URL}/comments/${id}`,
+      `${API_URL}/api/comments/${id}`,
       { text: commentText }, // ✅ FIXED
       {
         headers: {
