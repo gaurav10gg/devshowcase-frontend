@@ -36,7 +36,7 @@ export default function ProjectPage() {
 
   async function loadComments() {
     try {
-      const res = await axios.get(`${API_URL}/comments/${id}`);
+      const res = await axios.get(`${API_URL}/api/comments/${id}`);
       setComments(res.data);
     } catch (err) {
       console.log("Failed to load comments:", err);
@@ -79,7 +79,7 @@ async function handleLike() {
 
     try {
       const res = await axios.post(
-        `${API_URL}/comments/${id}`,
+        `${API_URL}/api/comments/${id}`,
         { text: commentText },
         { headers: getAuthHeaders() }
       );
