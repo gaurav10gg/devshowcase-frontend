@@ -45,6 +45,11 @@ export default function ProjectPage() {
   async function loadProject() {
     try {
       const token = localStorage.getItem("token");
+      
+      if (!token) {
+        console.warn("⚠️ No token found - user not logged in");
+      }
+      
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       
       const res = await axios.get(`${API_URL}/api/projects/${id}`, { headers });
@@ -53,11 +58,23 @@ export default function ProjectPage() {
       console.log("🔍 Liked value:", res.data.liked, "Type:", typeof res.data.liked);
       console.log("🔍 Likes value:", res.data.likes, "Type:", typeof res.data.likes);
       
-      // ⭐ FIX: Ensure proper data types
+      // ⭐ WORKAROUND: If backend doesn't return 'liked', check localStorage
+      let isLiked = false;
+      
+      if (res.data.liked !== undefined) {
+        // Backend returned liked status
+        isLiked = res.data.liked === 1 || res.data.liked === "1" || res.data.liked === true;
+      } else if (token) {
+        // Backend not returning liked - use localStorage as fallback
+        console.log("⚠️ Backend not returning 'liked' - using localStorage fallback");
+        const likedProjects = JSON.parse(localStorage.getItem("likedProjects") || "[]");
+        isLiked = likedProjects.includes(parseInt(id));
+        console.log("📦 LocalStorage liked projects:", likedProjects);
+      }
+      
       const projectData = {
         ...res.data,
-        // If liked is 0 or "0", it should be false. If 1 or "1" or true, should be true
-        liked: res.data.liked === 1 || res.data.liked === "1" || res.data.liked === true,
+        liked: isLiked,
         likes: parseInt(res.data.likes) || 0,
       };
       
@@ -103,6 +120,12 @@ export default function ProjectPage() {
         await axios.delete(`${API_URL}/api/projects/${id}/like`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        
+        // ⭐ Update localStorage
+        const likedProjects = JSON.parse(localStorage.getItem("likedProjects") || "[]");
+        const updated = likedProjects.filter(pid => pid !== parseInt(id));
+        localStorage.setItem("likedProjects", JSON.stringify(updated));
+        console.log("💾 Removed from liked:", updated);
       } else {
         // Like
         await axios.post(
@@ -110,6 +133,14 @@ export default function ProjectPage() {
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        
+        // ⭐ Update localStorage
+        const likedProjects = JSON.parse(localStorage.getItem("likedProjects") || "[]");
+        if (!likedProjects.includes(parseInt(id))) {
+          likedProjects.push(parseInt(id));
+          localStorage.setItem("likedProjects", JSON.stringify(likedProjects));
+          console.log("💾 Added to liked:", likedProjects);
+        }
       }
       
       // ⭐ Reload to get fresh data from backend
