@@ -48,7 +48,22 @@ export default function ProjectPage() {
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       
       const res = await axios.get(`${API_URL}/api/projects/${id}`, { headers });
-      setProject(res.data);
+      
+      console.log("🔍 Backend Response:", res.data);
+      console.log("🔍 Liked value:", res.data.liked, "Type:", typeof res.data.liked);
+      console.log("🔍 Likes value:", res.data.likes, "Type:", typeof res.data.likes);
+      
+      // ⭐ FIX: Ensure proper data types
+      const projectData = {
+        ...res.data,
+        // If liked is 0 or "0", it should be false. If 1 or "1" or true, should be true
+        liked: res.data.liked === 1 || res.data.liked === "1" || res.data.liked === true,
+        likes: parseInt(res.data.likes) || 0,
+      };
+      
+      console.log("✅ Processed Data:", projectData);
+      
+      setProject(projectData);
     } catch (err) {
       console.log("Failed to load project:", err);
     }
@@ -73,7 +88,7 @@ export default function ProjectPage() {
     }
 
     const wasLiked = project.liked;
-    const previousLikes = project.likes;
+    const previousLikes = parseInt(project.likes) || 0;
 
     // ⭐ OPTIMISTIC UPDATE
     setProject({
@@ -96,6 +111,9 @@ export default function ProjectPage() {
           { headers: { Authorization: `Bearer ${token}` } }
         );
       }
+      
+      // ⭐ Reload to get fresh data from backend
+      await loadProject();
     } catch (err) {
       console.log("Like failed:", err);
       // ⭐ REVERT ON ERROR
@@ -238,7 +256,7 @@ export default function ProjectPage() {
             </IconButton>
 
             <Typography variant="body1" fontWeight={600}>
-              {project.likes}
+              {parseInt(project.likes) || 0}
             </Typography>
           </Box>
         </CardContent>
