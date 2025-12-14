@@ -24,6 +24,22 @@ export default function ProjectPage() {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
+  const [currentUser, setCurrentUser] = useState(null); // ⭐ ADD THIS
+
+  // ⭐ Load current user info
+  async function loadCurrentUser() {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await axios.get(`${API_URL}/api/users/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCurrentUser(res.data);
+    } catch (err) {
+      console.log("Failed to load user:", err);
+    }
+  }
 
   async function loadProject() {
     try {
@@ -89,7 +105,7 @@ export default function ProjectPage() {
     if (!commentText.trim()) return;
 
     try {
-      const token = localStorage.getItem("token"); // ✅ FIXED
+      const token = localStorage.getItem("token");
 
       if (!token) {
         alert("Please log in to comment");
@@ -106,8 +122,13 @@ export default function ProjectPage() {
         }
       );
 
-      // append new comment instantly
-      setComments((prev) => [...prev, res.data]);
+      // ⭐ Add comment with user info immediately
+      const newComment = {
+        ...res.data,
+        user_name: currentUser?.name || currentUser?.username || "You",
+      };
+
+      setComments((prev) => [...prev, newComment]);
       setCommentText("");
     } catch (err) {
       console.log("Failed to add comment:", err);
@@ -117,6 +138,7 @@ export default function ProjectPage() {
 
   useEffect(() => {
     async function init() {
+      await loadCurrentUser(); // ⭐ Load user first
       await loadProject();
       await loadComments();
       setLoading(false);
@@ -283,11 +305,40 @@ export default function ProjectPage() {
           )}
 
           {comments.map((c) => (
-            <Card key={c.id} sx={{ p: 2 }}>
-              <Typography fontWeight={600} color="primary">
-                {c.user_name || "Anonymous User"}
-              </Typography>
-              <Typography sx={{ mt: 0.5 }}>{c.text}</Typography>
+            <Card 
+              key={c.id} 
+              sx={{ 
+                p: 2.5,
+                transition: "0.2s ease",
+                "&:hover": {
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                }
+              }}
+            >
+              <Stack direction="row" spacing={1.5} alignItems="center" mb={1}>
+                <Box
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    bgcolor: "primary.main",
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: 700,
+                    fontSize: 14,
+                  }}
+                >
+                  {(c.user_name || "A")[0].toUpperCase()}
+                </Box>
+                
+                <Typography fontWeight={700} color="primary">
+                  {c.user_name || "Anonymous User"}
+                </Typography>
+              </Stack>
+              
+              <Typography sx={{ mt: 0.5, pl: 6 }}>{c.text}</Typography>
             </Card>
           ))}
         </Stack>
