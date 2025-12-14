@@ -31,13 +31,25 @@ export default function ThemeModeProvider({ children }) {
     });
   };
 
-  // ⭐ Apply saved mode on mount
+  // ⭐ Apply saved mode on mount + Update meta theme-color
   useEffect(() => {
     if (mode === "dark") {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
+
+    // ⭐ UPDATE BROWSER THEME COLOR (for mobile bottom bar)
+    let metaThemeColor = document.querySelector("meta[name='theme-color']");
+    
+    if (!metaThemeColor) {
+      metaThemeColor = document.createElement("meta");
+      metaThemeColor.name = "theme-color";
+      document.head.appendChild(metaThemeColor);
+    }
+
+    // Set color based on mode
+    metaThemeColor.content = mode === "dark" ? "#0f0f0f" : "#ffffff";
   }, [mode]);
 
   const theme = useMemo(
