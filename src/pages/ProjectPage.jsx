@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchProjectById, likeProject, unlikeProject } from "../api/projects";
-import { getAuthHeaders } from "../api/index";
+import { likeProject, unlikeProject } from "../api/projects";
 import axios from "axios";
 import { API_URL } from "../config";
 
@@ -14,7 +13,8 @@ import {
   CardContent,
   TextField,
   Stack,
-  Skeleton,   // ⭐ ADDED
+  Skeleton,
+  Chip,
 } from "@mui/material";
 
 export default function ProjectPage() {
@@ -27,8 +27,13 @@ export default function ProjectPage() {
 
   async function loadProject() {
     try {
-      const data = await fetchProjectById(id);
-      setProject(data);
+      const token = localStorage.getItem("token");
+      
+      // ⭐ Send token to get liked status
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      
+      const res = await axios.get(`${API_URL}/api/projects/${id}`, { headers });
+      setProject(res.data);
     } catch (err) {
       console.log("Failed to load project:", err);
     }
@@ -42,59 +47,73 @@ export default function ProjectPage() {
       console.log("Failed to load comments:", err);
     }
   }
-async function handleLike() {
-  if (!project) return;
 
-  // ⭐ Optimistic update first
-  const prev = { ...project };
+  async function handleLike() {
+    if (!project) return;
 
-  const updated = {
-    ...project,
-    liked: !project.liked,
-    likes: project.liked ? project.likes - 1 : project.likes + 1,
-  };
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please log in to like projects");
+      return;
+    }
 
-  setProject(updated);
+    // ⭐ Optimistic update
+    const prev = { ...project };
 
-  try {
-    const result = project.liked
-      ? await unlikeProject(project.id)
-      : await likeProject(project.id);
+    const updated = {
+      ...project,
+      liked: !project.liked,
+      likes: project.liked ? project.likes - 1 : project.likes + 1,
+    };
 
-    // ⭐ Sync with backend-confirmed values
-    setProject((p) => ({
-      ...p,
-      liked: result.liked,
-      likes: Number(result.likes),
-    }));
-  } catch (err) {
-    console.log("Like failed:", err);
-    setProject(prev); // revert
+    setProject(updated);
+
+    try {
+      const result = project.liked
+        ? await unlikeProject(project.id)
+        : await likeProject(project.id);
+
+      // ⭐ Sync with backend
+      setProject((p) => ({
+        ...p,
+        liked: result.liked,
+        likes: Number(result.likes),
+      }));
+    } catch (err) {
+      console.log("Like failed:", err);
+      setProject(prev); // revert
+    }
   }
-}
-async function handleAddComment() {
-  if (!commentText.trim()) return;
 
-  try {
-    const token = localStorage.getItem("access_token");
+  async function handleAddComment() {
+    if (!commentText.trim()) return;
 
-    const res = await axios.post(
-      `${API_URL}/api/comments/${id}`,
-      { text: commentText }, // ✅ FIXED
-      {
-        headers: {
-          Authorization: `Bearer ${token}`, // ✅ correct token key
-        },
+    try {
+      const token = localStorage.getItem("token"); // ✅ FIXED
+
+      if (!token) {
+        alert("Please log in to comment");
+        return;
       }
-    );
 
-    // append new comment instantly
-    setComments((prev) => [...prev, res.data]);
-    setCommentText("");
-  } catch (err) {
-    console.log("Failed to add comment:", err);
+      const res = await axios.post(
+        `${API_URL}/api/comments/${id}`,
+        { text: commentText },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // append new comment instantly
+      setComments((prev) => [...prev, res.data]);
+      setCommentText("");
+    } catch (err) {
+      console.log("Failed to add comment:", err);
+      alert("Failed to add comment. Please try again.");
+    }
   }
-}
 
   useEffect(() => {
     async function init() {
@@ -166,6 +185,15 @@ async function handleAddComment() {
             {project.full_desc}
           </Typography>
 
+          {/* Tags */}
+          {project.tags && project.tags.length > 0 && (
+            <Stack direction="row" spacing={1} mt={2} flexWrap="wrap">
+              {project.tags.map((tag, i) => (
+                <Chip key={i} label={tag} size="small" color="primary" variant="outlined" />
+              ))}
+            </Stack>
+          )}
+
           {/* Buttons */}
           <Stack direction="row" spacing={2} mt={3}>
             {project.github && (
@@ -181,64 +209,85 @@ async function handleAddComment() {
             )}
           </Stack>
 
-                  <Button
+          {/* ⭐ IMPROVED LIKE BUTTON */}
+          <Button
             onClick={handleLike}
+            variant={project.liked ? "contained" : "outlined"}
             sx={{
               mt: 3,
               display: "flex",
               alignItems: "center",
-              gap: 1.2,
-              px: 2,
+              gap: 1,
+              px: 2.5,
               py: 1,
-              borderRadius: "10px",
-              border: "1px solid",
-              borderColor: project.liked ? "#ff6584" : "#d1d5db",
-              background: project.liked ? "rgba(255, 101, 132, 0.15)" : "white",
-              color: project.liked ? "#ff5070" : "#444",
+              borderRadius: "12px",
+              fontWeight: 600,
+              textTransform: "none",
+              borderColor: project.liked ? "#ef4444" : "#d1d5db",
+              bgcolor: project.liked ? "#ef4444" : "transparent",
+              color: project.liked ? "#fff" : "#64748b",
               transition: "all 0.2s ease",
               "&:hover": {
-                background: project.liked
-                  ? "rgba(255, 101, 132, 0.25)"
-                  : "#f3f4f6",
+                bgcolor: project.liked ? "#dc2626" : "#f8fafc",
+                borderColor: project.liked ? "#dc2626" : "#94a3b8",
+                transform: "scale(1.02)",
               },
             }}
           >
-            <span style={{ fontSize: "20px" }}>
+            <span style={{ fontSize: "18px" }}>
               {project.liked ? "❤️" : "🤍"}
             </span>
 
-            <span style={{ fontWeight: 600 }}>
-              {project.likes}
+            <span>
+              {project.likes} {project.likes === 1 ? "Like" : "Likes"}
             </span>
           </Button>
 
         </CardContent>
       </Card>
 
-      {/* Comments */}
+      {/* Comments Section */}
       <Box mt={4}>
-        <Typography variant="h5" mb={2}>
-          Comments
+        <Typography variant="h5" mb={2} fontWeight={700}>
+          Comments ({comments.length})
         </Typography>
 
-        <Stack direction="row" spacing={2} mb={2}>
+        <Stack direction="row" spacing={2} mb={3}>
           <TextField
             fullWidth
             label="Write a comment..."
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleAddComment();
+              }
+            }}
           />
 
-          <Button variant="contained" onClick={handleAddComment}>
+          <Button 
+            variant="contained" 
+            onClick={handleAddComment}
+            disabled={!commentText.trim()}
+          >
             Post
           </Button>
         </Stack>
 
         <Stack spacing={2}>
+          {comments.length === 0 && (
+            <Typography color="text.secondary" textAlign="center" py={3}>
+              No comments yet. Be the first to comment!
+            </Typography>
+          )}
+
           {comments.map((c) => (
             <Card key={c.id} sx={{ p: 2 }}>
-              <Typography fontWeight={600}>{c.user_name || "User"}</Typography>
-              <Typography>{c.text}</Typography>
+              <Typography fontWeight={600} color="primary">
+                {c.user_name || "Anonymous User"}
+              </Typography>
+              <Typography sx={{ mt: 0.5 }}>{c.text}</Typography>
             </Card>
           ))}
         </Stack>
@@ -246,4 +295,3 @@ async function handleAddComment() {
     </Box>
   );
 }
-
