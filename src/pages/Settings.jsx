@@ -9,13 +9,27 @@ import {
   Switch,
   Avatar,
   Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
+import LogoutIcon from "@mui/icons-material/Logout";
+import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
 import { supabase } from "../supabaseClient";
 import { API_URL } from "../config";
+import { useNavigate } from "react-router-dom";
+import { useTheme } from "@mui/material/styles";
 
 export default function Settings() {
+  const navigate = useNavigate();
+  const theme = useTheme();
   const [loading, setLoading] = useState(false);
+  const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  
   const [userInfo, setUserInfo] = useState({
     username: "",
     bio: "",
@@ -83,6 +97,46 @@ export default function Settings() {
     );
 
     setUserInfo((prev) => ({ ...prev, avatar: res.data.url }));
+  };
+
+  // ⭐ LOGOUT FUNCTION
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      localStorage.removeItem("token");
+      
+      // Reset theme to light mode
+      localStorage.setItem("themeMode", "light");
+      document.documentElement.classList.remove("dark");
+      
+      navigate("/", { replace: true });
+    } catch (err) {
+      console.error("Logout error:", err);
+      alert("Failed to logout. Please try again.");
+    }
+  };
+
+  // ⭐ DELETE ACCOUNT FUNCTION (placeholder)
+  const handleDeleteAccount = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      // You can implement this endpoint in your backend
+      // await axios.delete(`${API_URL}/api/users/me`, {
+      //   headers: { Authorization: `Bearer ${token}` },
+      // });
+      
+      await supabase.auth.signOut();
+      localStorage.removeItem("token");
+      localStorage.setItem("themeMode", "light");
+      document.documentElement.classList.remove("dark");
+      
+      alert("Account deleted successfully");
+      navigate("/", { replace: true });
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("Failed to delete account. Please try again.");
+    }
   };
 
   return (
@@ -181,20 +235,137 @@ export default function Settings() {
         size="large"
         onClick={handleSave}
         disabled={loading}
+        sx={{ mb: 3 }}
       >
         {loading ? "Saving..." : "Save Changes"}
       </Button>
 
+      {/* ⭐ ACCOUNT ACTIONS SECTION */}
+      <Paper 
+        sx={{ 
+          p: 3, 
+          mb: 4,
+          bgcolor: theme.palette.mode === "dark" ? "#1a1a1a" : "#fafafa",
+          border: `1px solid ${theme.palette.mode === "dark" ? "#333" : "#e0e0e0"}`
+        }}
+      >
+        <Typography variant="h6" mb={2}>
+          Account Actions
+        </Typography>
+
+        <Stack spacing={2}>
+          {/* LOGOUT BUTTON */}
+          <Button
+            variant="outlined"
+            size="large"
+            fullWidth
+            startIcon={<LogoutIcon />}
+            onClick={() => setOpenLogoutDialog(true)}
+            sx={{
+              color: theme.palette.mode === "dark" ? "#fbbf24" : "#f59e0b",
+              borderColor: theme.palette.mode === "dark" ? "#fbbf24" : "#f59e0b",
+              "&:hover": {
+                borderColor: "#d97706",
+                background: theme.palette.mode === "dark" ? "rgba(251, 191, 36, 0.1)" : "#fef3c7",
+              },
+            }}
+          >
+            Logout from Account
+          </Button>
+
+          <Typography variant="caption" color="text.secondary" textAlign="center">
+            You will be signed out from your current session
+          </Typography>
+        </Stack>
+      </Paper>
+
       {/* Danger Zone */}
       <Divider sx={{ my: 4 }} />
 
-      <Typography variant="h6" color="error" mb={1}>
-        Danger Zone
-      </Typography>
+      <Paper 
+        sx={{ 
+          p: 3, 
+          mb: 4,
+          bgcolor: theme.palette.mode === "dark" ? "#1a0a0a" : "#fff5f5",
+          border: `1px solid ${theme.palette.mode === "dark" ? "#5c1a1a" : "#fecaca"}`
+        }}
+      >
+        <Typography variant="h6" color="error" mb={1}>
+          Danger Zone
+        </Typography>
 
-      <Button variant="outlined" color="error">
-        Delete My Account
-      </Button>
+        <Typography variant="body2" color="text.secondary" mb={2}>
+          Once you delete your account, there is no going back. Please be certain.
+        </Typography>
+
+        <Button 
+          variant="outlined" 
+          color="error"
+          startIcon={<DeleteIcon />}
+          onClick={() => setOpenDeleteDialog(true)}
+        >
+          Delete My Account
+        </Button>
+      </Paper>
+
+      {/* ⭐ LOGOUT CONFIRMATION DIALOG */}
+      <Dialog
+        open={openLogoutDialog}
+        onClose={() => setOpenLogoutDialog(false)}
+      >
+        <DialogTitle>Confirm Logout</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to logout? You will need to sign in again to access your account.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenLogoutDialog(false)}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={() => {
+              setOpenLogoutDialog(false);
+              handleLogout();
+            }} 
+            variant="contained"
+            color="warning"
+            autoFocus
+          >
+            Logout
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ⭐ DELETE ACCOUNT CONFIRMATION DIALOG */}
+      <Dialog
+        open={openDeleteDialog}
+        onClose={() => setOpenDeleteDialog(false)}
+      >
+        <DialogTitle>Delete Account?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This action cannot be undone. This will permanently delete your account, 
+            all your projects, comments, and likes.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDeleteDialog(false)}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={() => {
+              setOpenDeleteDialog(false);
+              handleDeleteAccount();
+            }} 
+            variant="contained"
+            color="error"
+            autoFocus
+          >
+            Yes, Delete My Account
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
