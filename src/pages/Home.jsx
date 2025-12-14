@@ -24,7 +24,17 @@ export default function Home() {
       const res = await axios.get(`${API_URL}/api/projects`, {
         headers: token ? { Authorization: "Bearer " + token } : undefined,
       });
-      return res.data;
+      
+      // ⭐ If backend doesn't return 'liked', use localStorage
+      const likedProjects = JSON.parse(localStorage.getItem("likedProjects") || "[]");
+      
+      return res.data.map(project => ({
+        ...project,
+        liked: project.liked !== undefined 
+          ? (project.liked === 1 || project.liked === "1" || project.liked === true)
+          : likedProjects.includes(project.id),
+        likes: parseInt(project.likes) || 0,
+      }));
     },
   });
 
@@ -36,17 +46,29 @@ export default function Home() {
       const t = localStorage.getItem("token");
 
       if (liked) {
-        const res = await axios.delete(`${API_URL}/api/projects/${id}/like`, {
+        // Unlike
+        await axios.delete(`${API_URL}/api/projects/${id}/like`, {
           headers: { Authorization: "Bearer " + t },
         });
-        return res.data;
+        
+        // ⭐ Update localStorage
+        const likedProjects = JSON.parse(localStorage.getItem("likedProjects") || "[]");
+        const updated = likedProjects.filter(pid => pid !== id);
+        localStorage.setItem("likedProjects", JSON.stringify(updated));
       } else {
-        const res = await axios.post(
+        // Like
+        await axios.post(
           `${API_URL}/api/projects/${id}/like`,
           {},
           { headers: { Authorization: "Bearer " + t } }
         );
-        return res.data;
+        
+        // ⭐ Update localStorage
+        const likedProjects = JSON.parse(localStorage.getItem("likedProjects") || "[]");
+        if (!likedProjects.includes(id)) {
+          likedProjects.push(id);
+          localStorage.setItem("likedProjects", JSON.stringify(likedProjects));
+        }
       }
     },
 
@@ -54,6 +76,7 @@ export default function Home() {
       await qc.cancelQueries(["projects"]);
       const previous = qc.getQueryData(["projects"]);
 
+      // ⭐ OPTIMISTIC UPDATE - CLEAN LOGIC
       qc.setQueryData(["projects"], (old) =>
         old.map((p) =>
           p.id === id
@@ -70,11 +93,12 @@ export default function Home() {
     },
 
     onError: (_err, _vars, ctx) => {
+      // ⭐ REVERT ON ERROR
       qc.setQueryData(["projects"], ctx.previous);
     },
 
     onSettled: () => {
-      qc.invalidateQueries(["projects"]);
+      // ⭐ REMOVED invalidateQueries to prevent double counting
     },
   });
 
