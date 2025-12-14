@@ -3,7 +3,7 @@ import HomeIcon from "@mui/icons-material/Home";
 import SettingsIcon from "@mui/icons-material/Settings";
 import InfoIcon from "@mui/icons-material/Info";
 import FolderIcon from "@mui/icons-material/Folder";
-import LogoutIcon from "@mui/icons-material/Logout"; // ⭐ added
+import LogoutIcon from "@mui/icons-material/Logout";
 import { Link, useLocation } from "react-router-dom";
 import { useThemeMode } from "../context/ThemeContext";
 
@@ -21,6 +21,11 @@ export default function Sidebar({ open, onClose }) {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    
+    // ⭐ RESET THEME TO LIGHT MODE ON LOGOUT
+    localStorage.setItem("themeMode", "light");
+    document.documentElement.classList.remove("dark");
+    
     window.location.href = "/";
   };
 

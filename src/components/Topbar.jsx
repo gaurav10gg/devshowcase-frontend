@@ -31,6 +31,11 @@ export default function Topbar({ sidebarOpen, onToggleSidebar }) {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     localStorage.removeItem("token");
+    
+    // ⭐ RESET THEME TO LIGHT MODE ON LOGOUT
+    localStorage.setItem("themeMode", "light");
+    document.documentElement.classList.remove("dark");
+    
     navigate("/", { replace: true });
   };
 
