@@ -28,26 +28,35 @@ export default function Landing() {
 
   return (
     <>
-      <Box sx={{ bgcolor: "#f9fafb", minHeight: "100vh" }}>
+      <Box sx={{ bgcolor: "#f9fafb", minHeight: "100vh", pb: 0, mb: 0 }}>
         <Navbar onSignIn={handleSignIn} />
 
-        {/* ---------- HERO ---------- */}
-        <Container maxWidth="lg" sx={{ pt: { xs: 12, md: 18 }, pb: 8 }}>
+        <Container 
+          maxWidth="lg" 
+          sx={{ 
+            pt: { xs: 10, md: 18 }, 
+            pb: { xs: 6, md: 10 }, 
+            mb: 0,
+            px: { xs: 2, sm: 3 }
+          }}
+        >
           <Stack
             direction={{ xs: "column", md: "row" }}
-            spacing={{ xs: 5, md: 8 }}
+            spacing={{ xs: 4, md: 8 }}
             alignItems="center"
             justifyContent="space-between"
           >
+            {/* LEFT CONTENT */}
             <Box sx={{ flex: 1 }}>
               <Typography
                 variant="h2"
                 fontWeight={800}
                 sx={{
-                  lineHeight: { xs: 1.25, md: 1.15 },
-                  mb: { xs: 2.5, md: 3 },
-                  fontSize: { xs: "2rem", sm: "2.3rem", md: "3.8rem" },
+                  lineHeight: 1.15,
+                  mb: { xs: 2, md: 3 },
+                  fontSize: { xs: "1.75rem", sm: "2.5rem", md: "3.8rem" },
                   letterSpacing: "-1px",
+                  textAlign: { xs: "center", md: "left" }
                 }}
               >
                 Build. Share. Inspire.
@@ -61,38 +70,45 @@ export default function Landing() {
                 variant="h6"
                 color="text.secondary"
                 sx={{
-                  mb: { xs: 4, md: 5 },
+                  mb: { xs: 3, md: 5 },
                   maxWidth: "570px",
                   fontWeight: 400,
                   lineHeight: 1.55,
-                  fontSize: { xs: "0.95rem", sm: "1.1rem" },
+                  fontSize: { xs: "0.95rem", sm: "1.1rem", md: "1.25rem" },
+                  textAlign: { xs: "center", md: "left" },
+                  mx: { xs: "auto", md: 0 }
                 }}
               >
                 A modern space for developers to share what they're building,
                 discover new ideas, and connect with makers around the world.
               </Typography>
 
-              {/* ---------- BUTTONS ---------- */}
-              <Stack
-                direction={{ xs: "column", sm: "row" }}
-                spacing={{ xs: 1.5, sm: 2 }}
-                sx={{ width: { xs: "100%", sm: "auto" } }}
+              {/* BUTTONS */}
+              <Stack 
+                direction={{ xs: "column", sm: "row" }} 
+                spacing={2}
+                sx={{ 
+                  alignItems: "center",
+                  justifyContent: { xs: "center", md: "flex-start" }
+                }}
               >
                 <Button
                   variant="contained"
                   size="large"
+                  fullWidth={{ xs: true, sm: false }}
                   sx={{
-                    px: { xs: 2.5, sm: 4 },
-                    py: { xs: 1, sm: 1.4 },
-                    borderRadius: { xs: "10px", sm: "12px" },
+                    px: { xs: 3, md: 4 },
+                    py: { xs: 1.2, md: 1.4 },
+                    borderRadius: "12px",
                     fontWeight: 600,
-                    fontSize: { xs: "0.95rem", sm: "1rem" },
+                    fontSize: { xs: "0.9rem", md: "1rem" },
                     textTransform: "none",
-                    width: { xs: "100%", sm: "auto" },
                     backgroundColor: "#1976d2",
                     boxShadow: "0 4px 14px rgba(25,118,210,0.3)",
+                    maxWidth: { xs: "100%", sm: "none" },
                     "&:hover": {
                       backgroundColor: "#145a9e",
+                      boxShadow: "0 6px 20px rgba(25,118,210,0.35)",
                     },
                   }}
                   onClick={handleSignIn}
@@ -103,16 +119,21 @@ export default function Landing() {
                 <Button
                   variant="outlined"
                   size="large"
+                  fullWidth={{ xs: true, sm: false }}
                   sx={{
-                    px: { xs: 2.5, sm: 4 },
-                    py: { xs: 1, sm: 1.4 },
-                    borderRadius: { xs: "10px", sm: "12px" },
+                    px: { xs: 3, md: 4 },
+                    py: { xs: 1.2, md: 1.4 },
+                    borderRadius: "12px",
                     fontWeight: 600,
-                    fontSize: { xs: "0.95rem", sm: "1rem" },
+                    fontSize: { xs: "0.9rem", md: "1rem" },
                     textTransform: "none",
-                    width: { xs: "100%", sm: "auto" },
                     borderColor: "#1976d2",
                     color: "#1976d2",
+                    maxWidth: { xs: "100%", sm: "none" },
+                    "&:hover": {
+                      borderColor: "#145a9e",
+                      backgroundColor: "rgba(25,118,210,0.06)",
+                    },
                   }}
                 >
                   Learn More
@@ -120,13 +141,14 @@ export default function Landing() {
               </Stack>
             </Box>
 
-            {/* ---------- HERO IMAGE ---------- */}
+            {/* RIGHT IMAGE - Hidden on mobile */}
             <Box
               component="img"
               src="https://img.freepik.com/free-vector/coding-concept-illustration_114360-1678.jpg"
               alt="hero illustration"
               sx={{
-                width: { xs: "100%", md: "480px" },
+                width: { xs: "100%", sm: "90%", md: "480px" },
+                maxWidth: "480px",
                 borderRadius: 3,
                 display: { xs: "none", md: "block" },
                 boxShadow: "0 12px 40px rgba(0,0,0,0.1)",
@@ -136,9 +158,9 @@ export default function Landing() {
           </Stack>
         </Container>
 
-        {/* ---------- FEATURES ---------- */}
-        <Box sx={{ bgcolor: "#fff", py: { xs: 6, md: 10 } }}>
-          <Container maxWidth="md">
+        {/* FEATURES SECTION */}
+        <Box sx={{ bgcolor: "#fff", py: { xs: 6, md: 10 }, mb: 0 }}>
+          <Container maxWidth="md" sx={{ px: { xs: 2, sm: 3 } }}>
             <Typography
               variant="h4"
               fontWeight={800}
@@ -146,13 +168,13 @@ export default function Landing() {
                 textAlign: "center",
                 mb: { xs: 4, md: 6 },
                 letterSpacing: "-0.5px",
-                fontSize: { xs: "1.8rem", md: "2.3rem" },
+                fontSize: { xs: "1.5rem", sm: "2rem", md: "2.3rem" },
               }}
             >
               Why Join DevShowcase?
             </Typography>
 
-            <Stack spacing={{ xs: 2.5, md: 4 }} alignItems="center">
+            <Stack spacing={{ xs: 3, md: 4 }} alignItems="center">
               {[
                 {
                   title: "Share Your Projects",
@@ -171,13 +193,13 @@ export default function Landing() {
                   key={i}
                   elevation={3}
                   sx={{
-                    p: { xs: 2.5, sm: 4 },
+                    p: { xs: 3, md: 4 },
                     width: "100%",
                     maxWidth: "750px",
-                    borderRadius: { xs: 3, sm: 4 },
+                    borderRadius: 4,
                     transition: "0.2s ease",
                     "&:hover": {
-                      transform: { sm: "translateY(-4px)" },
+                      transform: "translateY(-4px)",
                       boxShadow: "0px 12px 32px rgba(0,0,0,0.12)",
                     },
                   }}
@@ -185,19 +207,19 @@ export default function Landing() {
                   <Typography
                     variant="h6"
                     fontWeight={700}
-                    sx={{
-                      mb: 1,
-                      fontSize: { xs: "1.05rem", sm: "1.2rem" },
+                    sx={{ 
+                      mb: 1.5, 
                       color: "#1976d2",
+                      fontSize: { xs: "1.1rem", md: "1.25rem" }
                     }}
                   >
                     {feature.title}
                   </Typography>
 
-                  <Typography
-                    variant="body2"
+                  <Typography 
+                    variant="body1" 
                     color="text.secondary"
-                    sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
+                    sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}
                   >
                     {feature.desc}
                   </Typography>
@@ -208,20 +230,24 @@ export default function Landing() {
         </Box>
       </Box>
 
-      {/* ---------- FOOTER ---------- */}
+      {/* FOOTER */}
       <Box
         sx={{
           width: "100%",
           bgcolor: "#000",
           color: "white",
-          pt: 6,
-          pb: 4,
+          pt: { xs: 4, md: 6 },
+          pb: { xs: 3, md: 4 },
           textAlign: "center",
           borderTop: "3px solid",
           borderImage: "linear-gradient(90deg, #1976d2, #6a11cb) 1",
         }}
       >
-        <Typography sx={{ opacity: 0.6, fontSize: { xs: "0.8rem", sm: "0.9rem" } }}>
+        <Typography sx={{ 
+          opacity: 0.6, 
+          fontSize: { xs: "0.8rem", md: "0.9rem" },
+          px: 2
+        }}>
           DevShowcase © 2025 — Made with ❤️ by Gaurav
         </Typography>
       </Box>
