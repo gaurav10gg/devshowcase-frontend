@@ -174,7 +174,7 @@ export default function Landing() {
               Why Join DevShowcase?
             </Typography>
 
-            <Stack spacing={{ xs: 3, md: 4 }} alignItems="center">
+            <Stack spacing={{ xs: 2, md: 4 }} alignItems="center">
               {[
                 {
                   title: "Share Your Projects",
@@ -193,10 +193,10 @@ export default function Landing() {
                   key={i}
                   elevation={3}
                   sx={{
-                    p: { xs: 3, md: 4 },
+                    p: { xs: 2, md: 4 },
                     width: "100%",
                     maxWidth: "750px",
-                    borderRadius: 4,
+                    borderRadius: { xs: 2, md: 4 },
                     transition: "0.2s ease",
                     "&:hover": {
                       transform: "translateY(-4px)",
@@ -208,9 +208,9 @@ export default function Landing() {
                     variant="h6"
                     fontWeight={700}
                     sx={{ 
-                      mb: 1.5, 
+                      mb: { xs: 0.75, md: 1.5 }, 
                       color: "#1976d2",
-                      fontSize: { xs: "1.1rem", md: "1.25rem" }
+                      fontSize: { xs: "0.95rem", md: "1.25rem" }
                     }}
                   >
                     {feature.title}
@@ -219,7 +219,10 @@ export default function Landing() {
                   <Typography 
                     variant="body1" 
                     color="text.secondary"
-                    sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}
+                    sx={{ 
+                      fontSize: { xs: "0.8rem", md: "1rem" },
+                      lineHeight: { xs: 1.5, md: 1.6 }
+                    }}
                   >
                     {feature.desc}
                   </Typography>
