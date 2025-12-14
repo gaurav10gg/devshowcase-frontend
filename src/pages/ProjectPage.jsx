@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { likeProject, unlikeProject } from "../api/projects";
 import axios from "axios";
 import { API_URL } from "../config";
 
@@ -15,7 +14,10 @@ import {
   Stack,
   Skeleton,
   Chip,
+  IconButton,
 } from "@mui/material";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 
 export default function ProjectPage() {
   const { id } = useParams();
@@ -24,9 +26,8 @@ export default function ProjectPage() {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
-  const [currentUser, setCurrentUser] = useState(null); // ⭐ ADD THIS
+  const [currentUser, setCurrentUser] = useState(null);
 
-  // ⭐ Load current user info
   async function loadCurrentUser() {
     try {
       const token = localStorage.getItem("token");
@@ -44,8 +45,6 @@ export default function ProjectPage() {
   async function loadProject() {
     try {
       const token = localStorage.getItem("token");
-      
-      // ⭐ Send token to get liked status
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       
       const res = await axios.get(`${API_URL}/api/projects/${id}`, { headers });
@@ -73,31 +72,38 @@ export default function ProjectPage() {
       return;
     }
 
-    // ⭐ Optimistic update
-    const prev = { ...project };
+    const wasLiked = project.liked;
+    const previousLikes = project.likes;
 
-    const updated = {
+    // ⭐ OPTIMISTIC UPDATE
+    setProject({
       ...project,
-      liked: !project.liked,
-      likes: project.liked ? project.likes - 1 : project.likes + 1,
-    };
-
-    setProject(updated);
+      liked: !wasLiked,
+      likes: wasLiked ? previousLikes - 1 : previousLikes + 1,
+    });
 
     try {
-      const result = project.liked
-        ? await unlikeProject(project.id)
-        : await likeProject(project.id);
-
-      // ⭐ Sync with backend
-      setProject((p) => ({
-        ...p,
-        liked: result.liked,
-        likes: Number(result.likes),
-      }));
+      if (wasLiked) {
+        // Unlike
+        await axios.delete(`${API_URL}/api/projects/${id}/like`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        // Like
+        await axios.post(
+          `${API_URL}/api/projects/${id}/like`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
     } catch (err) {
       console.log("Like failed:", err);
-      setProject(prev); // revert
+      // ⭐ REVERT ON ERROR
+      setProject({
+        ...project,
+        liked: wasLiked,
+        likes: previousLikes,
+      });
     }
   }
 
@@ -122,7 +128,6 @@ export default function ProjectPage() {
         }
       );
 
-      // ⭐ Add comment with user info immediately
       const newComment = {
         ...res.data,
         user_name: currentUser?.name || currentUser?.username || "You",
@@ -138,7 +143,7 @@ export default function ProjectPage() {
 
   useEffect(() => {
     async function init() {
-      await loadCurrentUser(); // ⭐ Load user first
+      await loadCurrentUser();
       await loadProject();
       await loadComments();
       setLoading(false);
@@ -146,38 +151,23 @@ export default function ProjectPage() {
     init();
   }, [id]);
 
-  /* ================================
-     ⭐ LOADING SKELETON UI
-  ================================ */
   if (loading) {
     return (
       <Box maxWidth="900px" mx="auto" p={3}>
         <Card sx={{ borderRadius: 3, mb: 3 }}>
           <Skeleton variant="rectangular" height={340} />
-
           <CardContent>
             <Skeleton width="60%" height={40} />
             <Skeleton width="80%" height={20} />
             <Skeleton width="90%" height={20} />
             <Skeleton width="95%" height={20} sx={{ mb: 2 }} />
-
             <Stack direction="row" spacing={2} mt={3}>
               <Skeleton variant="rectangular" width={120} height={40} />
               <Skeleton variant="rectangular" width={120} height={40} />
             </Stack>
-
             <Skeleton variant="rectangular" width={140} height={45} sx={{ mt: 3 }} />
           </CardContent>
         </Card>
-
-        <Typography variant="h5" mb={2}>
-          <Skeleton width={150} />
-        </Typography>
-
-        <Stack spacing={2}>
-          <Skeleton variant="rectangular" height={70} />
-          <Skeleton variant="rectangular" height={70} />
-        </Stack>
       </Box>
     );
   }
@@ -231,40 +221,26 @@ export default function ProjectPage() {
             )}
           </Stack>
 
-          {/* ⭐ IMPROVED LIKE BUTTON */}
-          <Button
-            onClick={handleLike}
-            variant={project.liked ? "contained" : "outlined"}
-            sx={{
-              mt: 3,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              px: 2.5,
-              py: 1,
-              borderRadius: "12px",
-              fontWeight: 600,
-              textTransform: "none",
-              borderColor: project.liked ? "#ef4444" : "#d1d5db",
-              bgcolor: project.liked ? "#ef4444" : "transparent",
-              color: project.liked ? "#fff" : "#64748b",
-              transition: "all 0.2s ease",
-              "&:hover": {
-                bgcolor: project.liked ? "#dc2626" : "#f8fafc",
-                borderColor: project.liked ? "#dc2626" : "#94a3b8",
-                transform: "scale(1.02)",
-              },
-            }}
-          >
-            <span style={{ fontSize: "18px" }}>
-              {project.liked ? "❤️" : "🤍"}
-            </span>
+          {/* ⭐ SIMPLE LIKE ICON BUTTON */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 3 }}>
+            <IconButton
+              onClick={handleLike}
+              sx={{
+                color: project.liked ? "#ef4444" : "#94a3b8",
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  color: project.liked ? "#dc2626" : "#ef4444",
+                  transform: "scale(1.1)",
+                },
+              }}
+            >
+              {project.liked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+            </IconButton>
 
-            <span>
-              {project.likes} {project.likes === 1 ? "Like" : "Likes"}
-            </span>
-          </Button>
-
+            <Typography variant="body1" fontWeight={600}>
+              {project.likes}
+            </Typography>
+          </Box>
         </CardContent>
       </Card>
 
