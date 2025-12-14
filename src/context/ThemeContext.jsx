@@ -8,11 +8,18 @@ export function useThemeMode() {
 }
 
 export default function ThemeModeProvider({ children }) {
-  const [mode, setMode] = useState("light");
+  // ⭐ Load from localStorage on init
+  const [mode, setMode] = useState(() => {
+    const saved = localStorage.getItem("themeMode");
+    return saved || "light";
+  });
 
   const toggleTheme = () => {
     setMode((prev) => {
       const next = prev === "light" ? "dark" : "light";
+
+      // ⭐ Save to localStorage
+      localStorage.setItem("themeMode", next);
 
       if (next === "dark") {
         document.documentElement.classList.add("dark");
@@ -24,7 +31,7 @@ export default function ThemeModeProvider({ children }) {
     });
   };
 
-  // ⭐ Ensure correct mode on refresh
+  // ⭐ Apply saved mode on mount
   useEffect(() => {
     if (mode === "dark") {
       document.documentElement.classList.add("dark");
@@ -48,7 +55,6 @@ export default function ThemeModeProvider({ children }) {
           },
         },
 
-        // ⭐ GLOBAL UI IMPROVEMENTS (Buttons especially)
         components: {
           MuiButton: {
             styleOverrides: {
