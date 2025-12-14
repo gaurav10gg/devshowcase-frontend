@@ -17,6 +17,7 @@ export default function Home() {
 
   // ----------------------------------------
   // FETCH ALL PROJECTS
+  // ⭐ FIXED: Now backend returns correct liked status
   // ----------------------------------------
   const { data, isLoading, error } = useQuery({
     queryKey: ["projects"],
@@ -25,14 +26,10 @@ export default function Home() {
         headers: token ? { Authorization: "Bearer " + token } : undefined,
       });
       
-      // ⭐ If backend doesn't return 'liked', use localStorage
-      const likedProjects = JSON.parse(localStorage.getItem("likedProjects") || "[]");
-      
+      // ⭐ Backend now returns correct liked status - no localStorage needed
       return res.data.map(project => ({
         ...project,
-        liked: project.liked !== undefined 
-          ? (project.liked === 1 || project.liked === "1" || project.liked === true)
-          : likedProjects.includes(project.id),
+        liked: project.liked === true || project.liked === 1,
         likes: parseInt(project.likes) || 0,
       }));
     },
@@ -40,6 +37,7 @@ export default function Home() {
 
   // ----------------------------------------
   // LIKE / UNLIKE TOGGLE MUTATION
+  // ⭐ FIXED: Cleaner logic with backend sync
   // ----------------------------------------
   const likeMutation = useMutation({
     mutationFn: async ({ id, liked }) => {
@@ -47,28 +45,18 @@ export default function Home() {
 
       if (liked) {
         // Unlike
-        await axios.delete(`${API_URL}/api/projects/${id}/like`, {
+        const res = await axios.delete(`${API_URL}/api/projects/${id}/like`, {
           headers: { Authorization: "Bearer " + t },
         });
-        
-        // ⭐ Update localStorage
-        const likedProjects = JSON.parse(localStorage.getItem("likedProjects") || "[]");
-        const updated = likedProjects.filter(pid => pid !== id);
-        localStorage.setItem("likedProjects", JSON.stringify(updated));
+        return res.data;
       } else {
         // Like
-        await axios.post(
+        const res = await axios.post(
           `${API_URL}/api/projects/${id}/like`,
           {},
           { headers: { Authorization: "Bearer " + t } }
         );
-        
-        // ⭐ Update localStorage
-        const likedProjects = JSON.parse(localStorage.getItem("likedProjects") || "[]");
-        if (!likedProjects.includes(id)) {
-          likedProjects.push(id);
-          localStorage.setItem("likedProjects", JSON.stringify(likedProjects));
-        }
+        return res.data;
       }
     },
 
@@ -76,7 +64,7 @@ export default function Home() {
       await qc.cancelQueries(["projects"]);
       const previous = qc.getQueryData(["projects"]);
 
-      // ⭐ OPTIMISTIC UPDATE - CLEAN LOGIC
+      // ⭐ OPTIMISTIC UPDATE
       qc.setQueryData(["projects"], (old) =>
         old.map((p) =>
           p.id === id
@@ -92,13 +80,24 @@ export default function Home() {
       return { previous };
     },
 
+    onSuccess: (data, variables) => {
+      // ⭐ Update with backend response to ensure accuracy
+      qc.setQueryData(["projects"], (old) =>
+        old.map((p) =>
+          p.id === variables.id
+            ? {
+                ...p,
+                liked: data.liked,
+                likes: data.likes,
+              }
+            : p
+        )
+      );
+    },
+
     onError: (_err, _vars, ctx) => {
       // ⭐ REVERT ON ERROR
       qc.setQueryData(["projects"], ctx.previous);
-    },
-
-    onSettled: () => {
-      // ⭐ REMOVED invalidateQueries to prevent double counting
     },
   });
 
