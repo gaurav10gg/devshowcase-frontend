@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 
-export default function Navbar({ onSignIn }) {
+export default function Navbar({ onSignIn, onAboutClick }) {
   const [open, setOpen] = useState(false);
 
   const toggleDrawer = () => setOpen(!open);
@@ -55,19 +55,7 @@ export default function Navbar({ onSignIn }) {
           >
             <Button
               variant="text"
-              sx={{
-                textTransform: "none",
-                fontWeight: 600,
-                fontSize: "0.95rem",
-                color: "#111",
-                "&:hover": { color: "#1976d2", background: "transparent" },
-              }}
-            >
-              Home
-            </Button>
-
-            <Button
-              variant="text"
+              onClick={onAboutClick}
               sx={{
                 textTransform: "none",
                 fontWeight: 600,
@@ -123,16 +111,10 @@ export default function Navbar({ onSignIn }) {
         >
           <List>
             <ListItem disablePadding>
-              <ListItemButton>
-                <ListItemText
-                  primary="Home"
-                  primaryTypographyProps={{ fontWeight: 600 }}
-                />
-              </ListItemButton>
-            </ListItem>
-
-            <ListItem disablePadding>
-              <ListItemButton>
+              <ListItemButton onClick={() => {
+                toggleDrawer();
+                onAboutClick();
+              }}>
                 <ListItemText
                   primary="About"
                   primaryTypographyProps={{ fontWeight: 600 }}
