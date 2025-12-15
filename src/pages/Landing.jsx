@@ -26,6 +26,14 @@ export default function Landing() {
     if (error) console.error("Google login error:", error);
   };
 
+  // ⭐ Scroll to About section
+  const scrollToAbout = () => {
+    const aboutSection = document.getElementById("about-section");
+    if (aboutSection) {
+      aboutSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <>
       <Box sx={{ bgcolor: "#f9fafb", minHeight: "100vh", pb: 0, mb: 0 }}>
