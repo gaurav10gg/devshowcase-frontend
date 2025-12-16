@@ -8,8 +8,11 @@ import {
 } from "@mui/material";
 import Navbar from "../components/Navbar";
 import { supabase } from "../supabaseClient";
+import { useThemeMode } from "../context/ThemeContext"; // ⭐ Import theme hook
 
 export default function Landing() {
+  const { mode } = useThemeMode(); // ⭐ Get current theme mode
+
   const handleSignIn = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -26,7 +29,6 @@ export default function Landing() {
     if (error) console.error("Google login error:", error);
   };
 
-  // ⭐ Scroll to About section
   const scrollToAbout = () => {
     const aboutSection = document.getElementById("about-section");
     if (aboutSection) {
@@ -36,8 +38,16 @@ export default function Landing() {
 
   return (
     <>
-      <Box sx={{ bgcolor: "#f9fafb", minHeight: "100vh", pb: 0, mb: 0 }}>
-        <Navbar onSignIn={handleSignIn} />
+      <Box 
+        sx={{ 
+          bgcolor: mode === "light" ? "#f9fafb" : "#0f0f0f", // ⭐ Dynamic bg
+          minHeight: "100vh", 
+          pb: 0, 
+          mb: 0,
+          color: mode === "light" ? "#111" : "#e5e5e5", // ⭐ Dynamic text
+        }}
+      >
+        <Navbar onSignIn={handleSignIn} onAboutClick={scrollToAbout} />
 
         <Container 
           maxWidth="lg" 
@@ -64,19 +74,21 @@ export default function Landing() {
                   mb: { xs: 2, md: 3 },
                   fontSize: { xs: "1.75rem", sm: "2.5rem", md: "3.8rem" },
                   letterSpacing: "-1px",
-                  textAlign: { xs: "center", md: "left" }
+                  textAlign: { xs: "center", md: "left" },
+                  color: mode === "light" ? "#111" : "#fff", // ⭐ Dynamic color
                 }}
               >
                 Build. Share. Inspire.
                 <br />
-                <span style={{ color: "#1976d2" }}>
+                <span style={{ 
+                  color: mode === "light" ? "#1976d2" : "#60a5fa" // ⭐ Dynamic accent
+                }}>
                   Showcase Your Dev Projects
                 </span>
               </Typography>
 
               <Typography
                 variant="h6"
-                color="text.secondary"
                 sx={{
                   mb: { xs: 3, md: 5 },
                   maxWidth: "570px",
@@ -84,7 +96,8 @@ export default function Landing() {
                   lineHeight: 1.55,
                   fontSize: { xs: "0.95rem", sm: "1.1rem", md: "1.25rem" },
                   textAlign: { xs: "center", md: "left" },
-                  mx: { xs: "auto", md: 0 }
+                  mx: { xs: "auto", md: 0 },
+                  color: mode === "light" ? "#64748b" : "#9ca3af", // ⭐ Dynamic secondary text
                 }}
               >
                 A modern space for developers to share what they're building,
@@ -111,12 +124,16 @@ export default function Landing() {
                     fontWeight: 600,
                     fontSize: { xs: "0.9rem", md: "1rem" },
                     textTransform: "none",
-                    backgroundColor: "#1976d2",
-                    boxShadow: "0 4px 14px rgba(25,118,210,0.3)",
+                    backgroundColor: mode === "light" ? "#1976d2" : "#3b82f6", // ⭐ Dynamic button
+                    boxShadow: mode === "light" 
+                      ? "0 4px 14px rgba(25,118,210,0.3)"
+                      : "0 4px 14px rgba(59,130,246,0.3)",
                     maxWidth: { xs: "100%", sm: "none" },
                     "&:hover": {
-                      backgroundColor: "#145a9e",
-                      boxShadow: "0 6px 20px rgba(25,118,210,0.35)",
+                      backgroundColor: mode === "light" ? "#145a9e" : "#2563eb",
+                      boxShadow: mode === "light"
+                        ? "0 6px 20px rgba(25,118,210,0.35)"
+                        : "0 6px 20px rgba(59,130,246,0.35)",
                     },
                   }}
                   onClick={handleSignIn}
@@ -135,12 +152,14 @@ export default function Landing() {
                     fontWeight: 600,
                     fontSize: { xs: "0.9rem", md: "1rem" },
                     textTransform: "none",
-                    borderColor: "#1976d2",
-                    color: "#1976d2",
+                    borderColor: mode === "light" ? "#1976d2" : "#60a5fa", // ⭐ Dynamic border
+                    color: mode === "light" ? "#1976d2" : "#60a5fa",
                     maxWidth: { xs: "100%", sm: "none" },
                     "&:hover": {
-                      borderColor: "#145a9e",
-                      backgroundColor: "rgba(25,118,210,0.06)",
+                      borderColor: mode === "light" ? "#145a9e" : "#3b82f6",
+                      backgroundColor: mode === "light" 
+                        ? "rgba(25,118,210,0.06)"
+                        : "rgba(59,130,246,0.1)",
                     },
                   }}
                 >
@@ -149,7 +168,7 @@ export default function Landing() {
               </Stack>
             </Box>
 
-            {/* RIGHT IMAGE - Hidden on mobile */}
+            {/* RIGHT IMAGE */}
             <Box
               component="img"
               src="https://img.freepik.com/free-vector/coding-concept-illustration_114360-1678.jpg"
@@ -159,15 +178,25 @@ export default function Landing() {
                 maxWidth: "480px",
                 borderRadius: 3,
                 display: { xs: "none", md: "block" },
-                boxShadow: "0 12px 40px rgba(0,0,0,0.1)",
+                boxShadow: mode === "light"
+                  ? "0 12px 40px rgba(0,0,0,0.1)"
+                  : "0 12px 40px rgba(0,0,0,0.5)",
                 objectFit: "cover",
+                filter: mode === "dark" ? "brightness(0.85)" : "none", // ⭐ Dim image in dark mode
               }}
             />
           </Stack>
         </Container>
 
         {/* FEATURES SECTION */}
-        <Box sx={{ bgcolor: "#fff", py: { xs: 6, md: 10 }, mb: 0 }}>
+        <Box 
+          sx={{ 
+            bgcolor: mode === "light" ? "#fff" : "#161b22", // ⭐ Dynamic section bg
+            py: { xs: 6, md: 10 }, 
+            mb: 0,
+            borderTop: mode === "dark" ? "1px solid #30363d" : "none", // ⭐ Border in dark mode
+          }}
+        >
           <Container maxWidth="md" sx={{ px: { xs: 2, sm: 3 } }}>
             <Typography
               variant="h4"
@@ -177,6 +206,7 @@ export default function Landing() {
                 mb: { xs: 4, md: 6 },
                 letterSpacing: "-0.5px",
                 fontSize: { xs: "1.5rem", sm: "2rem", md: "2.3rem" },
+                color: mode === "light" ? "#111" : "#f0f6fc", // ⭐ Dynamic heading
               }}
             >
               Why Join DevShowcase?
@@ -199,16 +229,20 @@ export default function Landing() {
               ].map((feature, i) => (
                 <Paper
                   key={i}
-                  elevation={3}
+                  elevation={mode === "light" ? 3 : 0}
                   sx={{
                     p: { xs: 2, md: 4 },
                     width: "100%",
                     maxWidth: "750px",
                     borderRadius: { xs: 2, md: 4 },
                     transition: "0.2s ease",
+                    bgcolor: mode === "light" ? "#fff" : "#1b1f24", // ⭐ Dynamic card bg
+                    border: mode === "dark" ? "1px solid #30363d" : "none", // ⭐ Border in dark
                     "&:hover": {
                       transform: "translateY(-4px)",
-                      boxShadow: "0px 12px 32px rgba(0,0,0,0.12)",
+                      boxShadow: mode === "light"
+                        ? "0px 12px 32px rgba(0,0,0,0.12)"
+                        : "0px 12px 32px rgba(0,0,0,0.6)",
                     },
                   }}
                 >
@@ -217,7 +251,7 @@ export default function Landing() {
                     fontWeight={700}
                     sx={{ 
                       mb: { xs: 0.75, md: 1.5 }, 
-                      color: "#1976d2",
+                      color: mode === "light" ? "#1976d2" : "#60a5fa", // ⭐ Dynamic accent
                       fontSize: { xs: "0.95rem", md: "1.25rem" }
                     }}
                   >
@@ -225,11 +259,11 @@ export default function Landing() {
                   </Typography>
 
                   <Typography 
-                    variant="body1" 
-                    color="text.secondary"
+                    variant="body1"
                     sx={{ 
                       fontSize: { xs: "0.8rem", md: "1rem" },
-                      lineHeight: { xs: 1.5, md: 1.6 }
+                      lineHeight: { xs: 1.5, md: 1.6 },
+                      color: mode === "light" ? "#64748b" : "#9ca3af", // ⭐ Dynamic text
                     }}
                   >
                     {feature.desc}
@@ -245,13 +279,15 @@ export default function Landing() {
       <Box
         sx={{
           width: "100%",
-          bgcolor: "#000",
+          bgcolor: mode === "light" ? "#000" : "#0a0a0a", // ⭐ Slightly different dark
           color: "white",
           pt: { xs: 4, md: 6 },
           pb: { xs: 3, md: 4 },
           textAlign: "center",
           borderTop: "3px solid",
-          borderImage: "linear-gradient(90deg, #1976d2, #6a11cb) 1",
+          borderImage: mode === "light"
+            ? "linear-gradient(90deg, #1976d2, #6a11cb) 1"
+            : "linear-gradient(90deg, #3b82f6, #8b5cf6) 1", // ⭐ Dynamic gradient
         }}
       >
         <Typography sx={{ 
