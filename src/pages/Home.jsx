@@ -17,7 +17,6 @@ export default function Home() {
 
   // ----------------------------------------
   // FETCH ALL PROJECTS
-  // ⭐ FIXED: Now backend returns correct liked status
   // ----------------------------------------
   const { data, isLoading, error } = useQuery({
     queryKey: ["projects"],
@@ -25,9 +24,8 @@ export default function Home() {
       const res = await axios.get(`${API_URL}/api/projects`, {
         headers: token ? { Authorization: "Bearer " + token } : undefined,
       });
-      
-      // ⭐ Backend now returns correct liked status - no localStorage needed
-      return res.data.map(project => ({
+
+      return res.data.map((project) => ({
         ...project,
         liked: project.liked === true || project.liked === 1,
         likes: parseInt(project.likes) || 0,
@@ -37,20 +35,17 @@ export default function Home() {
 
   // ----------------------------------------
   // LIKE / UNLIKE TOGGLE MUTATION
-  // ⭐ FIXED: Cleaner logic with backend sync
   // ----------------------------------------
   const likeMutation = useMutation({
     mutationFn: async ({ id, liked }) => {
       const t = localStorage.getItem("token");
 
       if (liked) {
-        // Unlike
         const res = await axios.delete(`${API_URL}/api/projects/${id}/like`, {
           headers: { Authorization: "Bearer " + t },
         });
         return res.data;
       } else {
-        // Like
         const res = await axios.post(
           `${API_URL}/api/projects/${id}/like`,
           {},
@@ -61,17 +56,20 @@ export default function Home() {
     },
 
     onMutate: async ({ id, liked }) => {
-      await qc.cancelQueries(["projects"]);
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await qc.cancelQueries({ queryKey: ["projects"] });
       const previous = qc.getQueryData(["projects"]);
 
-      // ⭐ OPTIMISTIC UPDATE
+      // Optimistically update the cache
       qc.setQueryData(["projects"], (old) =>
         old.map((p) =>
           p.id === id
             ? {
                 ...p,
                 liked: !liked,
-                likes: liked ? p.likes - 1 : p.likes + 1,
+                likes: liked
+                  ? Math.max(0, p.likes - 1)
+                  : p.likes + 1,
               }
             : p
         )
@@ -80,24 +78,19 @@ export default function Home() {
       return { previous };
     },
 
-    onSuccess: (data, variables) => {
-      // ⭐ Update with backend response to ensure accuracy
-      qc.setQueryData(["projects"], (old) =>
-        old.map((p) =>
-          p.id === variables.id
-            ? {
-                ...p,
-                liked: data.liked,
-                likes: data.likes,
-              }
-            : p
-        )
-      );
+    onError: (_err, _vars, ctx) => {
+      // Revert on error
+      if (ctx?.previous) {
+        qc.setQueryData(["projects"], ctx.previous);
+      }
     },
 
-    onError: (_err, _vars, ctx) => {
-      // ⭐ REVERT ON ERROR
-      qc.setQueryData(["projects"], ctx.previous);
+    // Do NOT override cache in onSuccess — keep the optimistic state
+    // The backend response from like/unlike doesn't reliably include
+    // the "liked" field for the current user, so we trust our optimistic update.
+    onSettled: () => {
+      // Optional: re-fetch in background to sync, but don't block UI
+      // qc.invalidateQueries({ queryKey: ["projects"] });
     },
   });
 
@@ -130,7 +123,13 @@ export default function Home() {
 
   if (error) {
     return (
-      <Typography sx={{ color: mode === "dark" ? "#f87171" : "red", mt: 4, textAlign: "center" }}>
+      <Typography
+        sx={{
+          color: mode === "dark" ? "#f87171" : "red",
+          mt: 4,
+          textAlign: "center",
+        }}
+      >
         Failed to load projects.
       </Typography>
     );
@@ -174,7 +173,10 @@ export default function Home() {
           Discover Projects
         </Typography>
 
-        <Typography variant="body2" sx={{ color: mode === "dark" ? "#b3b3b3" : "#64748b" }}>
+        <Typography
+          variant="body2"
+          sx={{ color: mode === "dark" ? "#b3b3b3" : "#64748b" }}
+        >
           See what other developers are building right now.
         </Typography>
       </Box>
@@ -184,11 +186,7 @@ export default function Home() {
         <Chip
           label="Top this week"
           color="primary"
-          sx={{
-            borderRadius: 999,
-            fontSize: 13,
-            px: 1.5,
-          }}
+          sx={{ borderRadius: 999, fontSize: 13, px: 1.5 }}
         />
         <Chip
           label="Newest"
@@ -214,10 +212,7 @@ export default function Home() {
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm: "1fr 1fr",
-          },
+          gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
           gap: 3,
         }}
       >
@@ -230,17 +225,31 @@ export default function Home() {
                 p: 2,
                 bgcolor: mode === "dark" ? "#181818" : "white",
                 borderRadius: 2,
-                border: `1px solid ${mode === "dark" ? "#27272a" : "#e2e8f0"}`,
+                border: `1px solid ${
+                  mode === "dark" ? "#27272a" : "#e2e8f0"
+                }`,
               }}
             >
               <Skeleton
                 variant="rectangular"
                 height={150}
-                sx={{ mb: 2, bgcolor: mode === "dark" ? "#3f3f46" : undefined }}
+                sx={{
+                  mb: 2,
+                  bgcolor: mode === "dark" ? "#3f3f46" : undefined,
+                }}
               />
-              <Skeleton sx={{ bgcolor: mode === "dark" ? "#3f3f46" : undefined }} width="40%" />
-              <Skeleton sx={{ bgcolor: mode === "dark" ? "#3f3f46" : undefined }} width="60%" />
-              <Skeleton sx={{ bgcolor: mode === "dark" ? "#3f3f46" : undefined }} width="30%" />
+              <Skeleton
+                sx={{ bgcolor: mode === "dark" ? "#3f3f46" : undefined }}
+                width="40%"
+              />
+              <Skeleton
+                sx={{ bgcolor: mode === "dark" ? "#3f3f46" : undefined }}
+                width="60%"
+              />
+              <Skeleton
+                sx={{ bgcolor: mode === "dark" ? "#3f3f46" : undefined }}
+                width="30%"
+              />
             </Box>
           ))}
 
