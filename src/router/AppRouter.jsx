@@ -7,7 +7,17 @@ import About from "../pages/About";
 import AppLayout from "../layouts/AppLayout";
 import AuthCallback from "../pages/AuthCallback";
 import ProjectPage from "../pages/ProjectPage";
+import GptConnect from "../pages/GptConnect";
 
+// add inside <Routes>:
+<Route path="/gpt-connect" element={<GptConnect />} />
+
+
+
+import OAuthConnect from "../pages/OAuthConnect";
+
+// inside <Routes> as public route:
+<Route path="/oauth-connect" element={<OAuthConnect />} />
 
 // ------------------------------------
 // Protected Route
