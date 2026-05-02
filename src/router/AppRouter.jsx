@@ -9,6 +9,9 @@ import AuthCallback from "../pages/AuthCallback";
 import ProjectPage from "../pages/ProjectPage";
 import GptConnect from "../pages/GptConnect";
 import OAuthConnect from "../pages/OAuthConnect";
+import Privacy from "../pages/Privacy";
+
+// add this route outside ProtectedRoute
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -26,6 +29,7 @@ export default function AppRouter() {
       <Route
         element={
           <ProtectedRoute>
+            <Route path="/privacy" element={<Privacy />} />
             <AppLayout />
           </ProtectedRoute>
         }
