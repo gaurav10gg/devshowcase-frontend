@@ -8,20 +8,8 @@ import AppLayout from "../layouts/AppLayout";
 import AuthCallback from "../pages/AuthCallback";
 import ProjectPage from "../pages/ProjectPage";
 import GptConnect from "../pages/GptConnect";
-
-// add inside <Routes>:
-<Route path="/gpt-connect" element={<GptConnect />} />
-
-
-
 import OAuthConnect from "../pages/OAuthConnect";
 
-// inside <Routes> as public route:
-<Route path="/oauth-connect" element={<OAuthConnect />} />
-
-// ------------------------------------
-// Protected Route
-// ------------------------------------
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
   return token ? children : <Navigate to="/" replace />;
@@ -30,14 +18,11 @@ function ProtectedRoute({ children }) {
 export default function AppRouter() {
   return (
     <Routes>
-      {/* Public */}
       <Route path="/" element={<Landing />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/gpt-connect" element={<GptConnect />} />
+      <Route path="/oauth-connect" element={<OAuthConnect />} />
 
-      {/* OAuth callback */}
-    
-    <Route path="/auth/callback" element={<AuthCallback />} />
- 
-      {/* Protected */}
       <Route
         element={
           <ProtectedRoute>
@@ -52,7 +37,6 @@ export default function AppRouter() {
         <Route path="/project/:id" element={<ProjectPage />} />
       </Route>
 
-      {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
