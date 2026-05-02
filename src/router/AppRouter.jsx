@@ -25,11 +25,11 @@ export default function AppRouter() {
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/gpt-connect" element={<GptConnect />} />
       <Route path="/oauth-connect" element={<OAuthConnect />} />
+      <Route path="/privacy" element={<Privacy />} />
 
       <Route
         element={
           <ProtectedRoute>
-            <Route path="/privacy" element={<Privacy />} />
             <AppLayout />
           </ProtectedRoute>
         }
